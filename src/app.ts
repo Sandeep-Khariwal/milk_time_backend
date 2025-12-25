@@ -14,10 +14,10 @@ import entryRouter from './routes/entries.route';
 dotenv.config();
 
 // Prepare uploads directory
-const uploadDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
-}
+// const uploadDir = path.join(__dirname, "uploads");
+// if (!fs.existsSync(uploadDir)) {
+//   fs.mkdirSync(uploadDir);
+// }
 
 // Razorpay setup
 // export const myRazorpayInstance = new Razorpay({
@@ -25,23 +25,8 @@ if (!fs.existsSync(uploadDir)) {
 //   key_secret: process.env.RAZORPAY_API_SECRET!,
 // });
 
-const totalCpu = os.cpus().length;
 
-if (cluster.isPrimary) {
-  console.log(`🧠 Primary ${process.pid} is running`);
 
-  for (let i = 0; i < totalCpu; i++) {
-    cluster.fork();
-  }
-
-  cluster.on("exit", (worker, code, signal) => {
-    console.error(
-      `💀 Worker ${worker.process.pid} died (code: ${code}, signal: ${signal})`
-    );
-    // Optional: Restart worker
-    // cluster.fork();
-  });
-} else {
   // Worker Process
   const startServer = async () => {
     try {
@@ -75,24 +60,12 @@ if (cluster.isPrimary) {
       app.use(`/api/${VERSION}/entry`, entryRouter);
 
       app.listen(PORT, () => {
-        console.log(`🚀 Worker ${process.pid} started on port ${PORT}`);
+        console.log(`🚀 started on port ${PORT}`);
       });
     } catch (error) {
-      console.error(`❌ Worker ${process.pid} failed to start:`, error);
+      console.error(`❌ failed to start:`, error);
       process.exit(1);
     }
   };
 
-  // Global error handlers
-  process.on("unhandledRejection", (reason) => {
-    console.error(`Unhandled Rejection in Worker ${process.pid}:`, reason);
-    process.exit(1);
-  });
-
-  process.on("uncaughtException", (err) => {
-    console.error(`Uncaught Exception in Worker ${process.pid}:`, err);
-    process.exit(1);
-  });
-
   startServer();
-}
