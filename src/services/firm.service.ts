@@ -28,7 +28,7 @@ export class FirmService {
         return { status: 404, message: "Firm not found!!" };
       }
 
-      return { status: 200, message: "Updated successfully!!" };
+      return { status: 200, message: "updated successfully!!" };
     } catch (error) {
       return { status: 500, message: error.message };
     }
@@ -72,7 +72,22 @@ export class FirmService {
       if (!firm) {
         return { status: 404, message: "Firm not found!!" };
       }
+ 
+      return { status: 200, message: "Updated successfully!!" };
+    } catch (error) {
+      return { status: 500, message: error.message };
+    }
+  }
+  public async addNewFarmer(id: string, fId: string) {
+    try {
+      const firm = await Firm.findByIdAndUpdate(id, {
+        $push: { distributers: fId },
+      });
 
+      if (!firm) {
+        return { status: 404, message: "Firm not found!!" };
+      }
+ 
       return { status: 200, message: "Updated successfully!!" };
     } catch (error) {
       return { status: 500, message: error.message };
@@ -87,8 +102,6 @@ export class FirmService {
       price: number;
     }
   ) {
-    console.log("service : ",id,data);
-    
     try {
       const firm = await Firm.findByIdAndUpdate(id, {
         $push: { stocks: data },
@@ -222,6 +235,7 @@ export class FirmService {
   }
 
   public async saleStock(id: string, stockId: string, quantity: number) {
+    
     try {
       const firm = await Firm.findById(id);
 
@@ -231,11 +245,15 @@ export class FirmService {
 
       // Find the stock item inside the firm's stocks
       const stock = firm.stocks.find((s: any) => s._id.toString() === stockId);
+      
+      
 
       if (!stock) {
         return { status: 404, message: "Stock item not found!!" };
       }
-
+      
+      console.log("stock 1 : ",stock);
+      console.log("stock check : ");
       // Check if enough quantity is available
       if (stock.quantity < quantity) {
         return {
@@ -243,12 +261,15 @@ export class FirmService {
           message: `Not enough stock! Available: ${stock.quantity}`,
         };
       }
+      console.log("stock 2 : ",stock);
 
       // Decrease quantity
-      stock.quantity -= quantity;
+      stock.quantity = stock.quantity  - quantity;
 
+      console.log("stock : ",stock);
       // Save updated firm
       await firm.save();
+
 
       return {
         status: 200,
@@ -256,6 +277,8 @@ export class FirmService {
         message: "Stock updated successfully!!",
       };
     } catch (error: any) {
+      console.log("error : ",error);
+      
       return { status: 500, message: error.message };
     }
   }

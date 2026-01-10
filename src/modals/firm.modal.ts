@@ -7,6 +7,7 @@ interface FirmModel {
   admin: string;
   distributers: string[];
   customers: string[];
+  farmers: string[];
   stocks: { item: string; quantity: number , price:number }[];
 }
 const firmSchema = new Schema<FirmModel>(
@@ -35,6 +36,11 @@ const firmSchema = new Schema<FirmModel>(
       ref: "user",
     },
     customers: {
+      type: [String],
+      default: [],
+      ref: "user",
+    },
+    farmers: {
       type: [String],
       default: [],
       ref: "user",

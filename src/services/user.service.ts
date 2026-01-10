@@ -51,11 +51,13 @@ export class UserService {
     }
   ) {
     try {
-      //   const saltRounds = 10;
-      //   const hashedPassword = await bcrypt.hash(data.password, saltRounds);
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(data.password, saltRounds);
+
       const updateData = {
         ...data,
         milkRate: data.rate,
+        password: hashedPassword,
       };
       console.log(id, updateData);
       const savedUser = await User.findByIdAndUpdate(id, updateData, {
@@ -78,7 +80,7 @@ export class UserService {
 
   public async getUserById(id: string) {
     try {
-      const user = await User.findById(id).populate([
+      const user = await User.findOne({ _id: id, isDeleted: false }).populate([
         {
           path: "firmId",
           select: ["_id", "name"],
@@ -96,7 +98,7 @@ export class UserService {
   }
   public async getAllUserByFirmId(id: string) {
     try {
-      const users = await User.find({ firmId: id }).select([
+      const users = await User.find({ firmId: id, isDeleted: false }).select([
         "_id",
         "name",
         "phoneNumber",
@@ -122,10 +124,89 @@ export class UserService {
       return { status: 500, message: error.message };
     }
   }
+  public async getAllDistributersByFirmId(id: string) {
+    try {
+      const users = await User.find({
+        firmId: id,
+        isDeleted: false,
+        userType: "distributer",
+      }).select(["_id", "name", "phoneNumber", "milkRate", "userType"]);
+
+      if (!users && users.length) {
+        return { status: 404, message: "User not found!!" };
+      }
+
+      const tUsers = users.map((user: any) => {
+        const { milkRate, ...rest } = user.toObject();
+
+        return {
+          ...rest,
+          rate: milkRate,
+        };
+      });
+
+      return { status: 200, users: tUsers, message: "user get successfully!!" };
+    } catch (error) {
+      return { status: 500, message: error.message };
+    }
+  }
+  public async getAllCustomersByFirmId(id: string) {
+    try {
+      const users = await User.find({
+        firmId: id,
+        isDeleted: false,
+        userType: "customer",
+      }).select(["_id", "name", "phoneNumber", "milkRate", "userType"]);
+
+      if (!users && users.length) {
+        return { status: 404, message: "User not found!!" };
+      }
+
+      const tUsers = users.map((user: any) => {
+        const { milkRate, ...rest } = user.toObject();
+
+        return {
+          ...rest,
+          rate: milkRate,
+        };
+      });
+
+      return { status: 200, users: tUsers, message: "user get successfully!!" };
+    } catch (error) {
+      return { status: 500, message: error.message };
+    }
+  }
+  public async getAllFarmersByFirmId(id: string) {
+    try {
+      const users = await User.find({
+        firmId: id,
+        isDeleted: false,
+        userType: "farmer",
+      }).select(["_id", "name", "phoneNumber", "milkRate", "userType"]);
+
+      if (!users && users.length) {
+        return { status: 404, message: "User not found!!" };
+      }
+
+      const tUsers = users.map((user: any) => {
+        const { milkRate, ...rest } = user.toObject();
+
+        return {
+          ...rest,
+          rate: milkRate,
+        };
+      });
+
+      return { status: 200, users: tUsers, message: "user get successfully!!" };
+    } catch (error) {
+      return { status: 500, message: error.message };
+    }
+  }
   public async loginUser(number: string, password: string) {
     try {
       const user = await User.findOne({
         phoneNumber: number,
+        isDeleted: false,
       }).populate([
         {
           path: "firmId",
@@ -192,13 +273,12 @@ export class UserService {
       amount: number;
     }
   ) {
-    
     try {
       const user = await User.findByIdAndUpdate(
         id,
-        { 
+        {
           $push: { purchasedItem: data },
-          $inc:{ earnings: -data.amount}
+          $inc: { earnings: -data.amount },
         },
         { new: true }
       );
@@ -214,7 +294,11 @@ export class UserService {
   }
   public async deleteUserById(id: string) {
     try {
-      const user = await User.findByIdAndDelete(id);
+      const user = await User.findByIdAndUpdate(
+        id,
+        { isDeleted: true },
+        { new: true }
+      );
 
       return { status: 200, user, message: "User Deleted!!" };
     } catch (error) {
@@ -254,16 +338,32 @@ export class UserService {
 
   public async getEntries(id: string) {
     try {
-      const user = await User.findById(id)
-    .select("milkEntry")
-        
+      const user = await User.findById(id).select("milkEntry");
+
       if (!user) {
         return { status: 404, message: "user not fond!!" };
       }
       return { status: 200, user };
     } catch (error) {
       console.log(error);
+
+      return { status: 500, message: error.message };
+    }
+  }
+
+  public async addHistoryInUser(id: string, historyId: string, amount: number, isCustomer:boolean) {
+    try {
+      console.log("id ", id);
       
+      await User.findByIdAndUpdate(id, {
+        $push: { history: historyId },
+        $inc: { earnings: isCustomer?amount:-amount },
+      },{new:true});
+
+      return { status: 200, nessage: "user updated!!" };
+    } catch (error) {
+      console.log(error);
+
       return { status: 500, message: error.message };
     }
   }

@@ -1,4 +1,4 @@
-import { DataBase } from './database';
+import { DataBase } from "./database";
 import express, { Express, Request, Response } from "express";
 import * as dotenv from "dotenv";
 import cors from "cors";
@@ -7,9 +7,10 @@ import fs from "fs";
 import path from "path";
 import os from "os";
 import cluster from "cluster";
-import userRouter from './routes/user.route';
-import firmRouter from './routes/firm.route';
-import entryRouter from './routes/entries.route';
+import userRouter from "./routes/user.route";
+import firmRouter from "./routes/firm.route";
+import entryRouter from "./routes/entries.route";
+import historyRouter from "./routes/history.route";
 
 dotenv.config();
 
@@ -25,47 +26,46 @@ dotenv.config();
 //   key_secret: process.env.RAZORPAY_API_SECRET!,
 // });
 
+// Worker Process
+const startServer = async () => {
+  try {
+    // Connect to DB
+    await DataBase();
 
+    const app: Express = express();
+    const PORT = process.env.PORT || 9799;
+    const VERSION = "v1";
 
-  // Worker Process
-  const startServer = async () => {
-    try {
-      // Connect to DB
-      await DataBase();
+    // Middleware
+    app.use(cors());
+    app.use(
+      express.json({
+        strict: false,
+        verify: (req: Request, res: Response, buf) => {
+          if (!buf.length) {
+            req.body = {};
+          }
+        },
+      })
+    );
+    app.use(express.urlencoded({ extended: true }));
+    app.use(bodyParser.json({ limit: "50mb" }));
 
-      const app: Express = express();
-      const PORT = process.env.PORT || 9799;
-      const VERSION = "v1";
+    // 👇 Serve uploaded files publicly
+    app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+    // Routes
+    app.use(`/api/${VERSION}/user`, userRouter);
+    app.use(`/api/${VERSION}/firm`, firmRouter);
+    app.use(`/api/${VERSION}/entry`, entryRouter);
+    app.use(`/api/${VERSION}/history`, historyRouter);
 
-      // Middleware
-      app.use(cors());
-      app.use(
-        express.json({
-          strict: false,
-          verify: (req: Request, res: Response, buf) => {
-            if (!buf.length) {
-              req.body = {};
-            }
-          },
-        })
-      );
-      app.use(express.urlencoded({ extended: true }));
-      app.use(bodyParser.json({ limit: "50mb" }));
+    app.listen(PORT, () => {
+      console.log(`🚀 started on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error(`❌ failed to start:`, error);
+    process.exit(1);
+  }
+};
 
-      // 👇 Serve uploaded files publicly
-      app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
-      // Routes
-      app.use(`/api/${VERSION}/user`, userRouter);
-      app.use(`/api/${VERSION}/firm`, firmRouter);
-      app.use(`/api/${VERSION}/entry`, entryRouter);
-
-      app.listen(PORT, () => {
-        console.log(`🚀 started on port ${PORT}`);
-      });
-    } catch (error) {
-      console.error(`❌ failed to start:`, error);
-      process.exit(1);
-    }
-  };
-
-  startServer();
+startServer();

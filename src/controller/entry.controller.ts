@@ -9,7 +9,11 @@ export const CreateEntry = async (req: Request, res: Response) => {
 
   let response;
 
-  response = await entryService.createEntry(data);
+  if (data._id) {
+    response = await entryService.editEntry(data);
+  } else {
+    response = await entryService.createEntry(data);
+  }
 
   if (response["status"] === 200) {
     if (data._id) {
@@ -42,6 +46,7 @@ export const CreateEntry = async (req: Request, res: Response) => {
 
 export const GetUserEntries = async (req: Request, res: Response) => {
   const { id } = req.params;
+    const data = req.query;
   const userService = new UserService();
   const entriesService = new EntryService();
 
@@ -50,7 +55,7 @@ export const GetUserEntries = async (req: Request, res: Response) => {
   if (response["status"] === 200) {
     const entryIds = response["user"].milkEntry;
 
-    const resp = await entriesService.getEntriesByIds(entryIds);
+    const resp = await entriesService.getEntriesByIds(id,entryIds,data);
 
     if (resp["status"] === 200) {
       res.status(200).json({

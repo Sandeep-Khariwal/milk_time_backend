@@ -8,6 +8,7 @@ interface EntriesModel {
   amount: number;
   customer:string;
   firm:string;
+  timeZone:string;
   date: Date;
 }
 const entriesSchema = new Schema<EntriesModel>(
@@ -22,13 +23,14 @@ const entriesSchema = new Schema<EntriesModel>(
     },
     fat: {
       type: Number,
-      default:1
+      default:0
     },
     amount: {
       type: Number,
     },
     rate: {
       type: Number,
+      
     },
     customer: {
       type: String,
@@ -37,6 +39,9 @@ const entriesSchema = new Schema<EntriesModel>(
     firm: {
       type: String,
       ref:"firm"
+    },
+    timeZone: {
+      type: String,
     },
     date: {
       type: Date,

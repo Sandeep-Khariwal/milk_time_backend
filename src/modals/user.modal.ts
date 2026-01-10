@@ -8,12 +8,14 @@ interface UserModel {
   token: string;
   password: string;
   firmId: string;
+  isDeleted: boolean;
 
   // fields for customers
   earnings?: number;
   milkRate?: number;
   milkEntry?: string[];
-  purchasedItem?: { item: string; quantity: number,  amount:number }[];
+  history?: string[];
+  purchasedItem?: { item: string; quantity: number; amount: number }[];
 }
 const userSchema = new Schema<UserModel>(
   {
@@ -50,6 +52,10 @@ const userSchema = new Schema<UserModel>(
       type: Number,
       default: 0,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
     userType: {
       type: String,
       default: "",
@@ -73,7 +79,12 @@ const userSchema = new Schema<UserModel>(
     milkEntry: {
       type: [String],
       default: [],
-      ref:"entry"
+      ref: "entry",
+    },
+    history: {
+      type: [String],
+      default: [],
+      ref: "history",
     },
   },
   { timestamps: true }
