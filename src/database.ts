@@ -4,7 +4,6 @@ dotenv.config();
 
 export const DataBase = async () => {
   try {
-    console.log("DATABASE:", process.env.DATABASE);
 
     await mongoose.connect(process.env.DATABASE as string);
 
