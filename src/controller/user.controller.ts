@@ -49,7 +49,7 @@ export const CreateUser = async (req: Request, res: Response) => {
 export const LoginUser = async (req: Request, res: Response) => {
   const { phoneNumber, password } = req.body;
   const userService = new UserService();
-
+    console.log("phoneNumber : ",phoneNumber);
   const response = await userService.loginUser(phoneNumber, password);
 
   if (response["status"] === 200) {

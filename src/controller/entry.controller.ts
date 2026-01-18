@@ -55,7 +55,7 @@ export const GetUserEntries = async (req: Request, res: Response) => {
   if (response["status"] === 200) {
     const entryIds = response["user"].milkEntry;
 
-    const resp = await entriesService.getEntriesByIds(id,entryIds,data);
+    const resp = await entriesService.getEntriesByIds(id,data);
 
     if (resp["status"] === 200) {
       res.status(200).json({

@@ -10,7 +10,9 @@ export class UserService {
     password: string;
     userType: string;
     firmId: string;
-    rate: number;
+    userCode: string;
+    buffaloRate: number;
+    cowRate: number;
   }) {
     try {
       const isUserPresent = await User.findOne({
@@ -25,7 +27,9 @@ export class UserService {
       user.phoneNumber = data.phoneNumber;
       user.userType = data.userType;
       user.firmId = data.firmId;
-      user.milkRate = data.rate;
+      user.userCode = data.userCode;
+      user.buffaloRate = data.buffaloRate;
+      user.cowRate = data.cowRate;
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(data.password, saltRounds);
 
@@ -47,17 +51,18 @@ export class UserService {
       password: string;
       userType: string;
       firmId: string;
-      rate: number;
-    }
+      buffaloRate: number;
+      cowRate: number;
+    },
   ) {
     try {
-      const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(data.password, saltRounds);
+      // const saltRounds = 10;
+      // const hashedPassword = await bcrypt.hash(data.password, saltRounds);
 
       const updateData = {
         ...data,
-        milkRate: data.rate,
-        password: hashedPassword,
+        buffaloRate: data.buffaloRate,
+        cowRate: data.cowRate,
       };
       console.log(id, updateData);
       const savedUser = await User.findByIdAndUpdate(id, updateData, {
@@ -102,24 +107,17 @@ export class UserService {
         "_id",
         "name",
         "phoneNumber",
-        "milkRate",
+        "cowRate",
+        "buffaloRate",
         "userType",
+        "userCode",
       ]);
 
       if (!users && users.length) {
         return { status: 404, message: "User not found!!" };
       }
 
-      const tUsers = users.map((user: any) => {
-        const { milkRate, ...rest } = user.toObject();
-
-        return {
-          ...rest,
-          rate: milkRate,
-        };
-      });
-
-      return { status: 200, users: tUsers, message: "user get successfully!!" };
+      return { status: 200, users: users, message: "user get successfully!!" };
     } catch (error) {
       return { status: 500, message: error.message };
     }
@@ -130,22 +128,13 @@ export class UserService {
         firmId: id,
         isDeleted: false,
         userType: "distributer",
-      }).select(["_id", "name", "phoneNumber", "milkRate", "userType"]);
+      }).select(["_id", "name", "phoneNumber", "userType","userCode"]);
 
       if (!users && users.length) {
         return { status: 404, message: "User not found!!" };
       }
 
-      const tUsers = users.map((user: any) => {
-        const { milkRate, ...rest } = user.toObject();
-
-        return {
-          ...rest,
-          rate: milkRate,
-        };
-      });
-
-      return { status: 200, users: tUsers, message: "user get successfully!!" };
+      return { status: 200, users: users, message: "user get successfully!!" };
     } catch (error) {
       return { status: 500, message: error.message };
     }
@@ -156,7 +145,7 @@ export class UserService {
         firmId: id,
         isDeleted: false,
         userType: "customer",
-      }).select(["_id", "name", "phoneNumber", "milkRate", "userType"]);
+      }).select(["_id", "name", "phoneNumber", "buffaloRate", "cowRate","userCode", "userType"]);
 
       if (!users && users.length) {
         return { status: 404, message: "User not found!!" };
@@ -182,22 +171,14 @@ export class UserService {
         firmId: id,
         isDeleted: false,
         userType: "farmer",
-      }).select(["_id", "name", "phoneNumber", "milkRate", "userType"]);
+      }).select(["_id", "name", "phoneNumber", "buffaloRate", "userCode", "cowRate"]);
 
       if (!users && users.length) {
         return { status: 404, message: "User not found!!" };
       }
+      
 
-      const tUsers = users.map((user: any) => {
-        const { milkRate, ...rest } = user.toObject();
-
-        return {
-          ...rest,
-          rate: milkRate,
-        };
-      });
-
-      return { status: 200, users: tUsers, message: "user get successfully!!" };
+      return { status: 200, users: users, message: "user get successfully!!" };
     } catch (error) {
       return { status: 500, message: error.message };
     }
@@ -271,7 +252,7 @@ export class UserService {
       item: string;
       quantity: number;
       amount: number;
-    }
+    },
   ) {
     try {
       const user = await User.findByIdAndUpdate(
@@ -280,7 +261,7 @@ export class UserService {
           $push: { purchasedItem: data },
           $inc: { earnings: -data.amount },
         },
-        { new: true }
+        { new: true },
       );
 
       if (!user) {
@@ -297,7 +278,7 @@ export class UserService {
       const user = await User.findByIdAndUpdate(
         id,
         { isDeleted: true },
-        { new: true }
+        { new: true },
       );
 
       return { status: 200, user, message: "User Deleted!!" };
@@ -351,14 +332,23 @@ export class UserService {
     }
   }
 
-  public async addHistoryInUser(id: string, historyId: string, amount: number, isCustomer:boolean) {
+  public async addHistoryInUser(
+    id: string,
+    historyId: string,
+    amount: number,
+    isCustomer: boolean,
+  ) {
     try {
       console.log("id ", id);
-      
-      await User.findByIdAndUpdate(id, {
-        $push: { history: historyId },
-        $inc: { earnings: isCustomer?amount:-amount },
-      },{new:true});
+
+      await User.findByIdAndUpdate(
+        id,
+        {
+          $push: { history: historyId },
+          $inc: { earnings: isCustomer ? amount : -amount },
+        },
+        { new: true },
+      );
 
       return { status: 200, nessage: "user updated!!" };
     } catch (error) {

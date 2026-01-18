@@ -46,8 +46,6 @@ export class EntryService {
     firm: string;
   }) {
     try {
-      console.log("data : ", data);
-
       const entry = await Entry.findById(data._id);
 
       if (!entry) {
@@ -57,9 +55,6 @@ export class EntryService {
       const previousAmount = entry.amount;
 
       const actualAmount = data.amount - previousAmount;
-
-      console.log("actualAmount : ", actualAmount);
-
       await Entry.findByIdAndUpdate(data._id, data);
 
       return {
@@ -74,7 +69,6 @@ export class EntryService {
 
 public async getEntriesByIds(
   id: string,
-  ids: string[],
   data: any
 ) {
   try {
@@ -97,7 +91,6 @@ public async getEntriesByIds(
     
 
     const entries = await Entry.find(query)
-      // .sort({ createdAt: -1 })
       .skip(fromDate && toDate ? 0 : skipValue) // no skip when date filter
       .limit(fromDate && toDate ? 0 : limit);
 
