@@ -70,6 +70,24 @@ export const GetUserHistory = async (req: Request, res: Response) => {
       .json({ status: response["status"], message: response["message"] });
   }
 };
+export const GetUserAllHistory = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const historyService = new HistoryService();
+
+  const response = await historyService.getUserAllsHistory(id);
+
+  if (response["status"] === 200) {
+    res.status(response["status"]).json({
+      status: response["status"],
+      data: response["history"],
+      message: response["message"],
+    });
+  } else {
+    res
+      .status(response["status"])
+      .json({ status: response["status"], message: response["message"] });
+  }
+};
 export const GetAllHistory = async (req: Request, res: Response) => {
   const { id } = req.params;
   const historyService = new HistoryService();

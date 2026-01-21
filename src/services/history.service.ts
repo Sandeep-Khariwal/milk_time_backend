@@ -10,7 +10,6 @@ export class HistoryService {
     amount: number;
     quantity: number;
   }) {
-    
     try {
       const history = new History();
       history._id = `HIST-${randomUUID()}`;
@@ -30,7 +29,26 @@ export class HistoryService {
 
       const savedHistory = await history.save();
 
-      return { status: 200, history:savedHistory, message: "History created" };
+      return { status: 200, history: savedHistory, message: "History created" };
+    } catch (error) {
+      return { status: 500, message: error.message };
+    }
+  }
+
+  public async getUserAllsHistory(id: string) {
+    try {
+      const histories = await History.find({ user: id })
+        .populate({
+          path: "user",
+          select: ["_id", "name"],
+        })
+        .sort({ createdAt: -1 });
+
+      if (!histories && !histories.length) {
+        return { status: 404, message: "No History found!!" };
+      }
+
+      return { status: 200, history: histories };
     } catch (error) {
       return { status: 500, message: error.message };
     }
@@ -38,30 +56,35 @@ export class HistoryService {
 
   public async getUsersHistory(id: string) {
     try {
-      const histories = await History.find({ user: id }).populate({
-        path: "user",
-        select: ["_id", "name"],
-      });
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
 
-      if (!histories && !histories.length) {
+      const histories = await History.find({
+        user: id,
+        createdAt: { $gte: oneMonthAgo },
+      })
+        .populate({
+          path: "user",
+          select: ["_id", "name"],
+        })
+        .sort({ createdAt: -1 });
+
+      if (!histories || histories.length === 0) {
         return { status: 404, message: "No History found!!" };
       }
 
-      console.log("histories : ",histories);
-      
-
       return { status: 200, history: histories };
-    } catch (error) {
+    } catch (error: any) {
       return { status: 500, message: error.message };
     }
   }
+
   public async getAllHistory(id: string) {
     try {
       const histories = await History.find({ firm: id }).populate({
         path: "user",
         select: ["_id", "name"],
       });
-      
 
       if (!histories && !histories.length) {
         return { status: 404, message: "No History found!!" };

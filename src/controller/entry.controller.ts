@@ -46,32 +46,21 @@ export const CreateEntry = async (req: Request, res: Response) => {
 
 export const GetUserEntries = async (req: Request, res: Response) => {
   const { id } = req.params;
-    const data = req.query;
-  const userService = new UserService();
+  const data = req.query;
   const entriesService = new EntryService();
 
-  const response = await userService.getEntries(id);
+  const resp = await entriesService.getEntriesByIds(id, data);
 
-  if (response["status"] === 200) {
-    const entryIds = response["user"].milkEntry;
-
-    const resp = await entriesService.getEntriesByIds(id,data);
-
-    if (resp["status"] === 200) {
-      res.status(200).json({
-        status: 200,
-        data: resp["entries"],
-      });
-    } else {
-      res.status(200).json({
-        status: 200,
-        message: response["message"],
-      });
-    }
+  if (resp["status"] === 200) {
+    res.status(200).json({
+      status: 200,
+      data: resp["entries"],
+    });
   } else {
-    res
-      .status(response["status"])
-      .json({ status: response["status"], message: response["message"] });
+    res.status(200).json({
+      status: 200,
+      message: resp["message"],
+    });
   }
 };
 export const GetTodayAllEntries = async (req: Request, res: Response) => {

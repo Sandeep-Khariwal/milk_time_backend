@@ -72,13 +72,34 @@ public async getEntriesByIds(
   data: any
 ) {
   try {
-    const { fromDate, toDate, skip = "0" } = data;
+    const { fromDate, toDate, skip = 0, userType } = data;
 
     const query: any = {
       customer: id,
     };
 
-    // ✅ DATE FILTER
+    const today = new Date();
+
+    // ✅ CASE 1: Customer + NO filter + NO skip
+    if (
+      userType === "customer" &&
+      !fromDate &&
+      !toDate &&
+      Number(skip) === 0
+    ) {
+      const startOfMonth = new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        1
+      );
+
+      query.date = {
+        $gte: startOfMonth,
+        $lte: today,
+      };
+    }
+
+    // ✅ CASE 2: Filter provided → use filter
     if (fromDate && toDate) {
       query.date = {
         $gte: new Date(fromDate),
@@ -86,15 +107,13 @@ public async getEntriesByIds(
       };
     }
 
-    const limit = 31; // change as needed
+    const limit = 31;
     const skipValue = Number(skip);
-    
 
     const entries = await Entry.find(query)
-      .skip(fromDate && toDate ? 0 : skipValue) // no skip when date filter
-      .limit(fromDate && toDate ? 0 : limit);
+      .skip(fromDate && toDate ? 0 : skipValue)
+      .limit(fromDate && toDate ? 0 : limit) 
 
-      console.log("entries : ",entries);
       
 
     return { status: 200, entries };
@@ -102,6 +121,7 @@ public async getEntriesByIds(
     return { status: 500, message: error.message };
   }
 }
+
 
 
   public async getTodayEntriesByCustomer(firmId: string) {
