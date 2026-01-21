@@ -1,6 +1,8 @@
 
 import { NextFunction, Request, Response } from "express";
 import jwt, { Secret } from "jsonwebtoken"
+import dotenv from "dotenv";
+dotenv.config();
 
 export const generateAccessToken = (data: {
   _id: string;
@@ -48,11 +50,14 @@ export const authenticateToken = (
       res.status(401).json({ status: 401, message: "Token has been expired " });
       return;
     }
-
+  console.log("authHeader : ", process.env.TOKEN_SECRET ,  authHeader.length , authHeader);
+  
     jwt.verify(
       authHeader,
       process.env.TOKEN_SECRET as string,
       (err: any, user: any) => {
+        console.log("error n user : ", user , err);
+        
         if (err) {
           return res.status(403).json("Error occure in middleware");
         }

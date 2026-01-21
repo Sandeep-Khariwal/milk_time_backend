@@ -47,6 +47,9 @@ export class HistoryService {
         return { status: 404, message: "No History found!!" };
       }
 
+      console.log("histories : ",histories);
+      
+
       return { status: 200, history: histories };
     } catch (error) {
       return { status: 500, message: error.message };

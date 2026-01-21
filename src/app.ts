@@ -13,6 +13,9 @@ import entryRouter from "./routes/entries.route";
 import historyRouter from "./routes/history.route";
 // import dns from "dns";
 // dns.setServers(["8.8.8.8", "8.8.4.4"]);
+// import dns from "dns";
+// dns.setDefaultResultOrder("ipv4first");
+
 
 dotenv.config();
 
@@ -62,7 +65,7 @@ const startServer = async () => {
     app.use(`/api/${VERSION}/history`, historyRouter);
 
     app.listen(PORT, () => {
-      console.log(`🚀 started on port ${PORT}`);
+      console.log(`🚀 started on port http://localhost:${PORT}`);
     });
   } catch (error) {
     console.error(`❌ failed to start:`, error);
