@@ -138,7 +138,7 @@ public async getEntriesByIds(
       }).populate([
         {
           path: "customer",
-          select: ["_id", "name", "userType"],
+          select: ["_id", "name", "userType" , "userCode"],
         },
       ]);
 

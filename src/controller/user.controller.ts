@@ -16,7 +16,7 @@ export const CreateUser = async (req: Request, res: Response) => {
   } else {
     response = await userService.createUser(data);
   }
-  
+
   if (response["status"] === 200) {
     let userResp;
     const user = response["user"];
@@ -27,8 +27,8 @@ export const CreateUser = async (req: Request, res: Response) => {
     } else if (!data._id && user.userType === UserType.FARMER) {
       userResp = await firmServices.addNewFarmer(user.firmId, user._id);
     }
-    
-    if (data._id || userResp && userResp["status"] === 200) {
+
+    if (data._id || (userResp && userResp["status"] === 200)) {
       res.status(response["status"]).json({
         status: response["status"],
         user: response["user"],
@@ -49,11 +49,9 @@ export const CreateUser = async (req: Request, res: Response) => {
 export const LoginUser = async (req: Request, res: Response) => {
   const { phoneNumber, password } = req.body;
   const userService = new UserService();
-    console.log("phoneNumber : ",phoneNumber);
   const response = await userService.loginUser(phoneNumber, password);
 
   if (response["status"] === 200) {
-    
     res.status(response["status"]).json({
       status: response["status"],
       user: response["user"],
@@ -87,7 +85,7 @@ export const GetUser = async (req: clientRequest, res: Response) => {
 };
 
 export const GetUserById = async (req: clientRequest, res: Response) => {
-const {id} = req.params;
+  const { id } = req.params;
   const userService = new UserService();
 
   const response = await userService.getUserById(id);
@@ -96,6 +94,42 @@ const {id} = req.params;
     res.status(response["status"]).json({
       status: response["status"],
       user: response["user"],
+      message: response["message"],
+    });
+  } else {
+    res
+      .status(response["status"])
+      .json({ status: response["status"], message: response["message"] });
+  }
+};
+export const RestoreUserById = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const userService = new UserService();
+
+  const response = await userService.restoreUserById(id);
+
+  if (response["status"] === 200) {
+    res.status(response["status"]).json({
+      status: response["status"],
+      user: response["user"],
+      message: response["message"],
+    });
+  } else {
+    res
+      .status(response["status"])
+      .json({ status: response["status"], message: response["message"] });
+  }
+};
+export const GetDeletedUsers = async (req: clientRequest, res: Response) => {
+  const { id } = req.params;
+  const userService = new UserService();
+
+  const response = await userService.getDeletedUsers(id);
+
+  if (response["status"] === 200) {
+    res.status(response["status"]).json({
+      status: response["status"],
+      users: response["users"],
       message: response["message"],
     });
   } else {
@@ -179,14 +213,15 @@ export const getAllFarmers = async (req: clientRequest, res: Response) => {
       .json({ status: response["status"], message: response["message"] });
   }
 };
+
 export const SetPaymentForUser = async (req: clientRequest, res: Response) => {
   const { id } = req.params;
-  const data = req.body
+  const data = req.body;
   const userService = new UserService();
-  const historyService = new HistoryService()
+  const historyService = new HistoryService();
 
-  const response = await userService.addEarnings(id,data.amount);
-  await historyService.createHistory(data)
+  const response = await userService.addEarnings(id, data.amount);
+  await historyService.createHistory(data);
 
   if (response["status"] === 200) {
     res.status(response["status"]).json({
@@ -203,16 +238,14 @@ export const SetPaymentForUser = async (req: clientRequest, res: Response) => {
 export const DeleteUser = async (req: Request, res: Response) => {
   const { id } = req.params;
   const userService = new UserService();
-  const firmService = new FirmService()
-console.log(id);
+  const firmService = new FirmService();
 
   const response = await userService.deleteUserById(id);
 
   if (response["status"] === 200) {
-      const user = response["user"];
-      console.log(user.firmId);
-      //remove userId from firm
-      await firmService.removeCustomer(user.firmId,id)
+    const user = response["user"];
+    //remove userId from firm
+    await firmService.removeCustomer(user.firmId, id);
     res.status(response["status"]).json({
       status: response["status"],
       message: response["message"],
@@ -230,13 +263,15 @@ export const SaleProduct = async (req: Request, res: Response) => {
   const userService = new UserService();
   const firmService = new FirmService();
 
-  console.log(id,data.firmId, data.stockId, data.quantity);
-
   // update user
   await userService.productPurchase(id, data);
 
   //update stock
-  const response = await firmService.saleStock(data.firmId, data.stockId, data.quantity);
+  const response = await firmService.saleStock(
+    data.firmId,
+    data.stockId,
+    data.quantity,
+  );
 
   if (response["status"] === 200) {
     res.status(response["status"]).json({

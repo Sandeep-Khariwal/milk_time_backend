@@ -252,8 +252,6 @@ export class FirmService {
         return { status: 404, message: "Stock item not found!!" };
       }
       
-      console.log("stock 1 : ",stock);
-      console.log("stock check : ");
       // Check if enough quantity is available
       if (stock.quantity < quantity) {
         return {
@@ -261,12 +259,9 @@ export class FirmService {
           message: `Not enough stock! Available: ${stock.quantity}`,
         };
       }
-      console.log("stock 2 : ",stock);
 
       // Decrease quantity
       stock.quantity = stock.quantity  - quantity;
-
-      console.log("stock : ",stock);
       // Save updated firm
       await firm.save();
 
@@ -277,8 +272,6 @@ export class FirmService {
         message: "Stock updated successfully!!",
       };
     } catch (error: any) {
-      console.log("error : ",error);
-      
       return { status: 500, message: error.message };
     }
   }

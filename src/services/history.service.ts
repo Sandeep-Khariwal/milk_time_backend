@@ -9,7 +9,9 @@ export class HistoryService {
     description: string;
     amount: number;
     quantity: number;
+    date:Date
   }) {
+    
     try {
       const history = new History();
       history._id = `HIST-${randomUUID()}`;
@@ -25,6 +27,9 @@ export class HistoryService {
       }
       if (data.description) {
         history.description = data.description;
+      }
+      if (data.date) {
+        history.date = new Date(data.date);
       }
 
       const savedHistory = await history.save();
@@ -42,7 +47,7 @@ export class HistoryService {
           path: "user",
           select: ["_id", "name"],
         })
-        .sort({ createdAt: -1 });
+        .sort({ date: -1 });
 
       if (!histories && !histories.length) {
         return { status: 404, message: "No History found!!" };
@@ -61,13 +66,13 @@ export class HistoryService {
 
       const histories = await History.find({
         user: id,
-        createdAt: { $gte: oneMonthAgo },
+        date: { $gte: oneMonthAgo },
       })
         .populate({
           path: "user",
           select: ["_id", "name"],
         })
-        .sort({ createdAt: -1 });
+        .sort({ date: -1 });
 
       if (!histories || histories.length === 0) {
         return { status: 404, message: "No History found!!" };

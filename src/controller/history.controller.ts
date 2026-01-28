@@ -8,28 +8,32 @@ export const CreateHistory = async (req: Request, res: Response) => {
   const data = req.body;
   const historyService = new HistoryService();
   const userService = new UserService();
-  const firmService = new FirmService()
-  const response = await historyService.createHistory(data);
-  
-  await firmService.saleStock(data.firm,data.stockId,data.quantity)
+  const firmService = new FirmService();
+  let isCustomer = false;
+  if (data.userType === UserType.CUSTOMER) {
+    isCustomer = true;
+  }
+
+  const histData = {
+    ...data,
+    amount: isCustomer? data.amount : -data.amount 
+  }
+
+  const response = await historyService.createHistory(histData);
+
+  await firmService.saleStock(data.firm, data.stockId, data.quantity);
 
   if (response["status"] === 200) {
     const history = response["history"];
 
     if (data.user) {
-      let isCustomer = false
-      if(data.userType === UserType.CUSTOMER){
-        isCustomer = true
-      }
-
-      let userResp:any
-        userResp = await userService.addHistoryInUser(
-          data.user,
-          history._id,
-          data.amount,
-          isCustomer
-        );
-      
+      let userResp: any;
+      userResp = await userService.addHistoryInUser(
+        data.user,
+        history._id,
+        data.amount,
+        isCustomer,
+      );
 
       if (userResp["status"] === 200) {
         res
@@ -91,7 +95,7 @@ export const GetUserAllHistory = async (req: Request, res: Response) => {
 export const GetAllHistory = async (req: Request, res: Response) => {
   const { id } = req.params;
   const historyService = new HistoryService();
-  
+
   const response = await historyService.getAllHistory(id);
 
   if (response["status"] === 200) {

@@ -50,13 +50,10 @@ export const authenticateToken = (
       res.status(401).json({ status: 401, message: "Token has been expired " });
       return;
     }
-  console.log("authHeader : ", process.env.TOKEN_SECRET ,  authHeader.length , authHeader);
-  
     jwt.verify(
       authHeader,
       process.env.TOKEN_SECRET as string,
       (err: any, user: any) => {
-        console.log("error n user : ", user , err);
         
         if (err) {
           return res.status(403).json("Error occure in middleware");

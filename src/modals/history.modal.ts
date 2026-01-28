@@ -44,6 +44,7 @@ const historySchema = new Schema<HistoryModel>(
     },
     date: {
       type: Date,
+      default: new Date()
     },
   },
   { timestamps: true }
