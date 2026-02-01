@@ -13,8 +13,6 @@ import entryRouter from "./routes/entries.route";
 import historyRouter from "./routes/history.route";
 // import dns from "dns";
 // dns.setServers(["8.8.8.8", "8.8.4.4"]);
-// import dns from "dns";
-// dns.setDefaultResultOrder("ipv4first");
 
 
 dotenv.config();

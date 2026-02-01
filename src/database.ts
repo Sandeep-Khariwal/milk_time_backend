@@ -5,7 +5,8 @@ dotenv.config();
 export const DataBase = async () => {
   try {
 
-    await mongoose.connect(process.env.DATABASE.trim() as string);
+    await mongoose.connect("mongodb://localhost:27017/milk");
+    // await mongoose.connect(process.env.DATABASE.trim() as string);
 
     console.log("Database connected successfully");
   } catch (error) {
