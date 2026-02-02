@@ -36,7 +36,7 @@ const startServer = async () => {
     await DataBase();
 
     const app: Express = express();
-    const PORT = process.env.PORT || 9799;
+    const PORT = process.env.PORT || 9000;
     const VERSION = "v1";
 
     // Middleware

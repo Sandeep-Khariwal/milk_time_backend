@@ -67,10 +67,8 @@ export class EntryService {
     }
   }
 
-public async getEntriesByIds(
-  id: string,
-  data: any
-) {
+
+public async getEntriesByIds(id: string, data: any) {
   try {
     const { fromDate, toDate, skip = 0, userType } = data;
 
@@ -78,28 +76,40 @@ public async getEntriesByIds(
       customer: id,
     };
 
-    const today = new Date();
+    const limit = 31;
+    const skipValue = Number(skip);
 
-    // ✅ CASE 1: Customer + NO filter + NO skip
-    if (
-      userType === "customer" &&
-      !fromDate &&
-      !toDate &&
-      Number(skip) === 0
-    ) {
+    // 🔹 CASE 1: No filter → current month only
+    if (!fromDate && !toDate) {
+      const now = new Date();
+
       const startOfMonth = new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        1
+        now.getFullYear(),
+        now.getMonth(),
+        1,
+        0,
+        0,
+        0,
+        0
+      );
+
+      const endOfMonth = new Date(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        0,
+        23,
+        59,
+        59,
+        999
       );
 
       query.date = {
         $gte: startOfMonth,
-        $lte: today,
+        $lte: endOfMonth,
       };
     }
 
-    // ✅ CASE 2: Filter provided → use filter
+    // 🔹 CASE 2: Filter provided → use exact range
     if (fromDate && toDate) {
       query.date = {
         $gte: new Date(fromDate),
@@ -107,20 +117,17 @@ public async getEntriesByIds(
       };
     }
 
-    const limit = 31;
-    const skipValue = Number(skip);
-
     const entries = await Entry.find(query)
+      .sort({ date: -1 }) // newest first
       .skip(fromDate && toDate ? 0 : skipValue)
-      .limit(fromDate && toDate ? 0 : limit) 
-
-      
+      .limit(fromDate && toDate ? 0 : limit);
 
     return { status: 200, entries };
   } catch (error: any) {
     return { status: 500, message: error.message };
   }
 }
+
 
 
 
@@ -134,7 +141,7 @@ public async getEntriesByIds(
 
       const entries = await Entry.find({
         firm: firmId,
-        createdAt: { $gte: start, $lte: end },
+        date: { $gte: start, $lte: end },
       }).populate([
         {
           path: "customer",
