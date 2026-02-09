@@ -7,11 +7,11 @@ export const CreateFirm = async (req: Request, res: Response) => {
   const userService = new UserService();
   const firmService = new FirmService();
 
-  const adminResp = await userService.createAdmin(data);
+  const adminResp: any = await userService.createAdmin(data);
 
   if (adminResp["status"] === 200) {
     const admin = adminResp["admin"];
-    const firmResp = await firmService.createFirm({
+    const firmResp: any = await firmService.createFirm({
       name: data.firmName,
       admin: admin._id,
     });

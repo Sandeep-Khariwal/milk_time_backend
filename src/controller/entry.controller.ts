@@ -7,7 +7,7 @@ export const CreateEntry = async (req: Request, res: Response) => {
   const entryService = new EntryService();
   const userService = new UserService();
 
-  let response;
+  let response:any;
 
   if (data._id) {
     response = await entryService.editEntry(data);

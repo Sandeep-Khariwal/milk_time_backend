@@ -31,7 +31,7 @@ export class EntryService {
       const savedEntry = await entry.save();
 
       return { status: 200, entry: savedEntry, message: "Entry Created!!" };
-    } catch (error) {
+    } catch (error:any) {
       return { status: 500, message: error.message };
     }
   }
@@ -62,7 +62,7 @@ export class EntryService {
         actualAmount: actualAmount,
         message: "Entry Created!!",
       };
-    } catch (error) {
+    } catch (error:any) {
       return { status: 500, message: error.message };
     }
   }
@@ -150,7 +150,7 @@ public async getEntriesByIds(id: string, data: any) {
       ]);
 
       return { status: 200, entries };
-    } catch (error) {
+    } catch (error:any) {
       return { status: 500, message: error.message };
     }
   }

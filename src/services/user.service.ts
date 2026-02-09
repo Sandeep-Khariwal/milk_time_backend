@@ -44,7 +44,7 @@ export class UserService {
       const savedUser = await user.save();
 
       return { status: 200, user: savedUser, message: "User Created!!" };
-    } catch (error) {
+    } catch (error:any) {
 
       return { status: 500, message: error.message };
     }
@@ -75,7 +75,7 @@ export class UserService {
         new: true,
       });
       return { status: 200, user: savedUser, message: "User updated!!" };
-    } catch (error) {
+    } catch (error:any) {
       return { status: 500, message: error.message };
     }
   }
@@ -84,7 +84,7 @@ export class UserService {
     try {
       await User.findByIdAndUpdate(id, { $set: { firmId: firmId } });
       return { status: 200, message: "Admin updated!!" };
-    } catch (error) {
+    } catch (error:any) {
       return { status: 500, message: error.message };
     }
   }
@@ -103,7 +103,7 @@ export class UserService {
       }
 
       return { status: 200, user, message: "user get successfully!!" };
-    } catch (error) {
+    } catch (error:any) {
       return { status: 500, message: error.message };
     }
   }
@@ -121,7 +121,7 @@ export class UserService {
       }
 
       return { status: 200, user, message: "user updated successfully!!" };
-    } catch (error) {
+    } catch (error:any) {
       
       return { status: 500, message: error.message };
     }
@@ -129,7 +129,7 @@ export class UserService {
 
   public async getDeletedUsers(id: string) {
     try {
-      const users = await User.find({ firmId: id, isDeleted: true }).select([
+      const users:any = await User.find({ firmId: id, isDeleted: true }).select([
         "_id",
         "name",
         "phoneNumber",
@@ -144,13 +144,13 @@ export class UserService {
       }
 
       return { status: 200, users, message: "users get successfully!!" };
-    } catch (error) {
+    } catch (error:any) {
       return { status: 500, message: error.message };
     }
   }
   public async getAllUserByFirmId(id: string) {
     try {
-      const users = await User.find({ firmId: id, isDeleted: false }).select([
+      const users:any = await User.find({ firmId: id, isDeleted: false }).select([
         "_id",
         "name",
         "phoneNumber",
@@ -165,13 +165,13 @@ export class UserService {
       }
 
       return { status: 200, users: users, message: "user get successfully!!" };
-    } catch (error) {
+    } catch (error:any) {
       return { status: 500, message: error.message };
     }
   }
   public async getAllDistributersByFirmId(id: string) {
     try {
-      const users = await User.find({
+      const users: any = await User.find({
         firmId: id,
         isDeleted: false,
         userType: "distributer",
@@ -182,13 +182,14 @@ export class UserService {
       }
 
       return { status: 200, users: users, message: "user get successfully!!" };
-    } catch (error) {
+    } catch (error:any) {
       return { status: 500, message: error.message };
     }
   }
+
   public async getAllCustomersByFirmId(id: string) {
     try {
-      const users = await User.find({
+      const users: any = await User.find({
         firmId: id,
         isDeleted: false,
         userType: "customer",
@@ -216,13 +217,13 @@ export class UserService {
       });
 
       return { status: 200, users: tUsers, message: "user get successfully!!" };
-    } catch (error) {
+    } catch (error: any) {
       return { status: 500, message: error.message };
     }
   }
   public async getAllFarmersByFirmId(id: string) {
     try {
-      const users = await User.find({
+      const users:any = await User.find({
         firmId: id,
         isDeleted: false,
         userType: "farmer",
@@ -240,7 +241,7 @@ export class UserService {
       }
 
       return { status: 200, users: users, message: "user get successfully!!" };
-    } catch (error) {
+    } catch (error: any) {
       return { status: 500, message: error.message };
     }
   }
@@ -273,10 +274,11 @@ export class UserService {
       });
 
       return { status: 200, user, token, message: "Login successfully!!" };
-    } catch (error) {
+    } catch (error:any) {
       return { status: 500, message: error.message };
     }
   }
+
   public async createAdmin(data: {
     name: string;
     phoneNumber: string;
@@ -302,7 +304,7 @@ export class UserService {
       const savedUser = await user.save();
 
       return { status: 200, admin: savedUser, message: "User Created!!" };
-    } catch (error) {
+    } catch (error: any) {
       return { status: 500, message: error.message };
     }
   }
@@ -330,7 +332,7 @@ export class UserService {
       }
 
       return { status: 200, user };
-    } catch (error) {
+    } catch (error: any) {
       return { status: 500, message: error.message };
     }
   }
@@ -343,7 +345,7 @@ export class UserService {
       );
 
       return { status: 200, user, message: "User Deleted!!" };
-    } catch (error) {
+    } catch (error: any) {
       return { status: 500, message: error.message };
     }
   }
@@ -359,12 +361,14 @@ export class UserService {
       }
 
       return { status: 200, message: "Entry added!!" };
-    } catch (error) {
+    } catch (error: any) {
       return { status: 500, message: error.message };
     }
   }
   public async addEarnings(id: string, amount: number) {
     try {
+      console.log("addingEarning : ",id,amount);
+      
       const user = await User.findByIdAndUpdate(id, {
         $inc: { earnings: amount },
       });
@@ -373,7 +377,7 @@ export class UserService {
         return { status: 404, message: "user not fond!!" };
       }
       return { status: 200, message: "Earnings updated!!" };
-    } catch (error) {
+    } catch (error:any) {
       return { status: 500, message: error.message };
     }
   }
@@ -386,7 +390,7 @@ export class UserService {
         return { status: 404, message: "user not fond!!" };
       }
       return { status: 200, user };
-    } catch (error) {
+    } catch (error: any) {
 
       return { status: 500, message: error.message };
     }
@@ -409,7 +413,26 @@ export class UserService {
       );
 
       return { status: 200, nessage: "user updated!!" };
-    } catch (error) {
+    } catch (error: any) {
+      return { status: 500, message: error.message };
+    }
+  }
+
+  public async removeHistoryFromUser(
+    id: string,
+    historyId: string
+  ) {
+    try {
+      await User.findByIdAndUpdate(
+        id,
+        {
+          $pull: { history: historyId },
+        },
+        { new: true },
+      );
+
+      return { status: 200, nessage: "user updated!!" };
+    } catch (error: any) {
       return { status: 500, message: error.message };
     }
   }

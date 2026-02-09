@@ -11,6 +11,7 @@ interface EntriesModel {
   timeZone:string;
   date: Date;
 }
+
 const entriesSchema = new Schema<EntriesModel>(
   {
     _id: {

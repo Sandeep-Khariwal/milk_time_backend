@@ -18,8 +18,8 @@ export const CreateUser = async (req: Request, res: Response) => {
   }
 
   if (response["status"] === 200) {
-    let userResp;
-    const user = response["user"];
+    let userResp:any;
+    const user:any = response["user"];
     if (!data._id && user.userType === UserType.CUSTOMER) {
       userResp = await firmServices.addNewCustomer(user.firmId, user._id);
     } else if (!data._id && user.userType === UserType.DISTRIBUTER) {
@@ -243,7 +243,7 @@ export const DeleteUser = async (req: Request, res: Response) => {
   const response = await userService.deleteUserById(id);
 
   if (response["status"] === 200) {
-    const user = response["user"];
+    const user:any = response["user"];
     //remove userId from firm
     await firmService.removeCustomer(user.firmId, id);
     res.status(response["status"]).json({
