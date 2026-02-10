@@ -118,7 +118,7 @@ public async getEntriesByIds(id: string, data: any) {
     }
 
     const entries = await Entry.find(query)
-      // .sort({ date: -1 }) // newest first
+      .sort({ date: 1 }) // newest first
       .skip(fromDate && toDate ? 0 : skipValue)
       .limit(fromDate && toDate ? 0 : limit);
 

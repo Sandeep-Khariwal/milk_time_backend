@@ -9,4 +9,5 @@ firmRouter.post("/addStock/:firmId/:stockId", AddStock);
 
 firmRouter.get("/stocks/:id", GetAllStocks);
 firmRouter.put("/delete/:id", authenticateToken, DeleteStock );
+
 export default firmRouter
