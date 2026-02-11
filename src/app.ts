@@ -8,7 +8,9 @@ import userRouter from "./routes/user.route";
 import firmRouter from "./routes/firm.route";
 import entryRouter from "./routes/entries.route";
 import historyRouter from "./routes/history.route";
-// import dns from "dns";
+import dns from "dns";
+import { PrivacyPloicy } from "./helper/privacyPolicy";
+import { DeleteHtmlForm } from "./helper/deleteAccount";
 // dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 dotenv.config();
@@ -45,7 +47,7 @@ const startServer = async () => {
             req.body = {};
           }
         },
-      })
+      }),
     );
     app.use(express.urlencoded({ extended: true }));
     app.use(bodyParser.json({ limit: "50mb" }));
@@ -57,6 +59,19 @@ const startServer = async () => {
     app.use(`/api/${VERSION}/firm`, firmRouter);
     app.use(`/api/${VERSION}/entry`, entryRouter);
     app.use(`/api/${VERSION}/history`, historyRouter);
+
+    // html content
+    app.get("/privacy-policy", (req, res) => {
+      res.setHeader("Content-Type", "text/html");
+      const html = PrivacyPloicy();
+      res.send(html);
+    });
+
+    app.get("/delete-account", (req, res) => {
+      res.setHeader("Content-Type", "text/html");
+      const formHtml = DeleteHtmlForm()
+        res.send(formHtml);
+    });
 
     app.listen(PORT, () => {
       console.log(`🚀 started on port http://localhost:${PORT}`);
