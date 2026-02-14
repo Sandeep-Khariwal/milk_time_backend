@@ -13,11 +13,26 @@ export class FirmService {
       const savedFirm = await firm.save();
 
       return { status: 200, firm: savedFirm, message: "Firm Created!!" };
-    } catch (error) {
+    } catch (error:any) {
       return { status: 500, message: error.message };
     }
   }
 
+  public async updateFirmName(id: string, name: string) {
+    try {
+      const firm = await Firm.findByIdAndUpdate(id, {
+        $set: { name: name },
+      });
+
+      if (!firm) {
+        return { status: 404, message: "Firm not found!!" };
+      }
+
+      return { status: 200, message: "name updated successfully!!" };
+    } catch (error:any) {
+      return { status: 500, message: error.message };
+    }
+  }
   public async addNewCustomer(id: string, cId: string) {
     try {
       const firm = await Firm.findByIdAndUpdate(id, {
@@ -29,7 +44,7 @@ export class FirmService {
       }
 
       return { status: 200, message: "updated successfully!!" };
-    } catch (error) {
+    } catch (error:any) {
       return { status: 500, message: error.message };
     }
   }
@@ -44,7 +59,7 @@ export class FirmService {
       }
 
       return { status: 200, message: "Updated successfully!!" };
-    } catch (error) {
+    } catch (error:any) {
       return { status: 500, message: error.message };
     }
   }
@@ -59,7 +74,7 @@ export class FirmService {
       }
 
       return { status: 200, message: "Updated successfully!!" };
-    } catch (error) {
+    } catch (error:any) {
       return { status: 500, message: error.message };
     }
   }
@@ -74,7 +89,7 @@ export class FirmService {
       }
  
       return { status: 200, message: "Updated successfully!!" };
-    } catch (error) {
+    } catch (error:any) {
       return { status: 500, message: error.message };
     }
   }
@@ -89,7 +104,7 @@ export class FirmService {
       }
  
       return { status: 200, message: "Updated successfully!!" };
-    } catch (error) {
+    } catch (error:any) {
       return { status: 500, message: error.message };
     }
   }
@@ -116,7 +131,7 @@ export class FirmService {
         stocks: firm.stocks,
         message: "Stocks created successfully!!",
       };
-    } catch (error) {
+    } catch (error:any) {
       return { status: 500, message: error.message };
     }
   }
@@ -151,7 +166,7 @@ export class FirmService {
         stocks: firm.stocks,
         message: "Stocks created successfully!!",
       };
-    } catch (error) {
+    } catch (error:any) {
       return { status: 500, message: error.message };
     }
   }
@@ -195,7 +210,7 @@ export class FirmService {
         stocks: firm.stocks,
         message: "Stocks fetch successfully!!",
       };
-    } catch (error) {
+    } catch (error:any) {
       return { status: 500, message: error.message };
     }
   }

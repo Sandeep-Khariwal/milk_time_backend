@@ -18,8 +18,8 @@ export const CreateUser = async (req: Request, res: Response) => {
   }
 
   if (response["status"] === 200) {
-    let userResp:any;
-    const user:any = response["user"];
+    let userResp: any;
+    const user: any = response["user"];
     if (!data._id && user.userType === UserType.CUSTOMER) {
       userResp = await firmServices.addNewCustomer(user.firmId, user._id);
     } else if (!data._id && user.userType === UserType.DISTRIBUTER) {
@@ -39,6 +39,30 @@ export const CreateUser = async (req: Request, res: Response) => {
         .status(userResp["status"])
         .json({ status: userResp["status"], message: userResp["message"] });
     }
+  } else {
+    res
+      .status(response["status"])
+      .json({ status: response["status"], message: response["message"] });
+  }
+};
+
+export const UpdateNameAndPassword = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { name, password } = req.body;
+   console.log("name, password : ",name, password);
+   
+  const userService = new UserService();
+  const firmService = new FirmService()
+
+  const response = await userService.updatePassword(id, password);
+
+  if (response["status"] === 200) {
+    const firmId:string =  response["user"]?.firmId??""
+    await firmService.updateFirmName(firmId,name)
+    res.status(response["status"]).json({
+      status: response["status"],
+      message: response["message"],
+    });
   } else {
     res
       .status(response["status"])
@@ -243,7 +267,7 @@ export const DeleteUser = async (req: Request, res: Response) => {
   const response = await userService.deleteUserById(id);
 
   if (response["status"] === 200) {
-    const user:any = response["user"];
+    const user: any = response["user"];
     //remove userId from firm
     await firmService.removeCustomer(user.firmId, id);
     res.status(response["status"]).json({

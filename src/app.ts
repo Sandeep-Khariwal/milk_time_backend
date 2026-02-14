@@ -11,7 +11,7 @@ import historyRouter from "./routes/history.route";
 import dns from "dns";
 import { PrivacyPloicy } from "./helper/privacyPolicy";
 import { DeleteHtmlForm } from "./helper/deleteAccount";
-// dns.setServers(["8.8.8.8", "8.8.4.4"]);
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 dotenv.config();
 

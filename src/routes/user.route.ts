@@ -13,12 +13,14 @@ import {
   RestoreUserById,
   SaleProduct,
   SetPaymentForUser,
+  UpdateNameAndPassword,
 } from "../controller/user.controller";
 import { authenticateToken } from "../middleware/jwtToken";
 const userRouter = express.Router();
 
 userRouter.post("/create", CreateUser);
 userRouter.post("/login", LoginUser);
+userRouter.put("/updateAdmin/:id", UpdateNameAndPassword);
 userRouter.put("/saleProduct/:id", SaleProduct);
 
 userRouter.put("/delete/:id", DeleteUser);
