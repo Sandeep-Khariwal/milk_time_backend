@@ -31,7 +31,7 @@ export class UserService {
         user.userCode = data.userCode;
       }
       if (data.buffaloRate) {
-        user.userCode = data.userCode;
+        user.buffaloRate = data.buffaloRate;
       }
       if (data.cowRate) {
         user.cowRate = data.cowRate;
@@ -75,13 +75,14 @@ export class UserService {
     },
   ) {
     try {
-      // const saltRounds = 10;
-      // const hashedPassword = await bcrypt.hash(data.password, saltRounds);
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(data.password, saltRounds);
 
       const updateData = {
         ...data,
         buffaloRate: data.buffaloRate,
         cowRate: data.cowRate,
+        password:hashedPassword
       };
       const savedUser = await User.findByIdAndUpdate(id, updateData, {
         new: true,
@@ -238,6 +239,8 @@ export class UserService {
       return { status: 500, message: error.message };
     }
   }
+
+
   public async getAllFarmersByFirmId(id: string) {
     try {
       const users: any = await User.find({
@@ -362,6 +365,15 @@ export class UserService {
       );
 
       return { status: 200, user, message: "User Deleted!!" };
+    } catch (error: any) {
+      return { status: 500, message: error.message };
+    }
+  }
+  public async deleteParmanentUserById(id: string) {
+    try {
+       await User.findByIdAndDelete(id);
+
+      return { status: 200,  message: "User Deleted!!" };
     } catch (error: any) {
       return { status: 500, message: error.message };
     }

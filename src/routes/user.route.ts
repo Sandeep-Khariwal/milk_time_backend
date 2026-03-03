@@ -2,6 +2,7 @@ import express from "express";
 import {
   CreateUser,
   DeleteUser,
+  DeleteUserFromDb,
   getAllCustomers,
   GetAllDistributers,
   getAllFarmers,
@@ -24,6 +25,7 @@ userRouter.put("/updateAdmin/:id", UpdateNameAndPassword);
 userRouter.put("/saleProduct/:id", SaleProduct);
 
 userRouter.put("/delete/:id", DeleteUser);
+userRouter.put("/deleteFromDb/:id", DeleteUserFromDb);
 userRouter.put("/setPayment/:id", SetPaymentForUser);
 userRouter.put("/restore/:id", RestoreUserById);
 

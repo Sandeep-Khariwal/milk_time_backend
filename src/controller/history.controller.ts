@@ -96,9 +96,17 @@ export const GetUserAllHistory = async (req: Request, res: Response) => {
 
 export const GetAllHistory = async (req: Request, res: Response) => {
   const { id } = req.params;
+  const {month} = req.query
+
   const historyService = new HistoryService();
 
-  const response = await historyService.getAllHistory(id);
+  let response
+
+  if(Number(month) === 1){
+    response = await historyService.getOneMonthHistory(id);
+  } else{
+    response = await historyService.getAllHistory(id);
+  }
 
   if (response["status"] === 200) {
     res.status(response["status"]).json({

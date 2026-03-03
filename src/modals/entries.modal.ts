@@ -9,6 +9,7 @@ interface EntriesModel {
   customer:string;
   firm:string;
   timeZone:string;
+  isBuffalo:boolean;
   date: Date;
 }
 
@@ -43,6 +44,10 @@ const entriesSchema = new Schema<EntriesModel>(
     },
     timeZone: {
       type: String,
+    },
+    isBuffalo: {
+      type: Boolean,
+      default:false
     },
     date: {
       type: Date,

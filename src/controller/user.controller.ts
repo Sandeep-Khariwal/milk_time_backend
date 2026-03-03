@@ -4,6 +4,7 @@ import { UserService } from "../services/user.service";
 import { FirmService } from "../services/firm.service";
 import { clientRequest } from "../middleware/jwtToken";
 import { HistoryService } from "../services/history.service";
+import { EntryService } from "../services/entry.service";
 
 export const CreateUser = async (req: Request, res: Response) => {
   const data = req.body;
@@ -49,16 +50,16 @@ export const CreateUser = async (req: Request, res: Response) => {
 export const UpdateNameAndPassword = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { name, password } = req.body;
-   console.log("name, password : ",name, password);
-   
+  console.log("name, password : ", name, password);
+
   const userService = new UserService();
-  const firmService = new FirmService()
+  const firmService = new FirmService();
 
   const response = await userService.updatePassword(id, password);
 
   if (response["status"] === 200) {
-    const firmId:string =  response["user"]?.firmId??""
-    await firmService.updateFirmName(firmId,name)
+    const firmId: string = response["user"]?.firmId ?? "";
+    await firmService.updateFirmName(firmId, name);
     res.status(response["status"]).json({
       status: response["status"],
       message: response["message"],
@@ -204,13 +205,30 @@ export const GetAllDistributers = async (req: clientRequest, res: Response) => {
 export const getAllCustomers = async (req: clientRequest, res: Response) => {
   const { id } = req.params;
   const userService = new UserService();
+  const entryService = new EntryService();
 
   const response = await userService.getAllCustomersByFirmId(id);
+  const resp1 = await entryService.getAllUserIdIfTodayEntry(id);
 
-  if (response["status"] === 200) {
+  if (response["status"] === 200 && resp1["status"] === 200) {
+    const userIds = resp1["users"]?.map((usr: any) => usr.customer);
+    const formatedUser = response["users"]?.map((usrs: any) => {
+      if (userIds?.includes(usrs._id)) {
+        return {
+          ...usrs,
+          milkUpdated: true,
+        };
+      } else {
+        return {
+          ...usrs,
+          milkUpdated: false,
+        };
+      }
+    });
+
     res.status(response["status"]).json({
       status: response["status"],
-      users: response["users"],
+      users: formatedUser,
       message: response["message"],
     });
   } else {
@@ -222,13 +240,30 @@ export const getAllCustomers = async (req: clientRequest, res: Response) => {
 export const getAllFarmers = async (req: clientRequest, res: Response) => {
   const { id } = req.params;
   const userService = new UserService();
+  const entryService = new EntryService();
 
   const response = await userService.getAllFarmersByFirmId(id);
+    const resp1 = await entryService.getAllUserIdIfTodayEntry(id);
 
-  if (response["status"] === 200) {
+  if (response["status"] === 200 && resp1["status"] === 200) {
+        const userIds = resp1["users"]?.map((usr: any) => usr.customer);
+    const formatedUser = response["users"]?.map((u: any) => {
+      const usrs = u.toObject()
+      if (userIds?.includes(usrs._id)) {
+        return {
+          ...usrs,
+          milkUpdated: true,
+        };
+      } else {
+        return {
+          ...usrs,
+          milkUpdated: false,
+        };
+      }
+    });
     res.status(response["status"]).json({
       status: response["status"],
-      users: response["users"],
+      users: formatedUser,
       message: response["message"],
     });
   } else {
@@ -262,14 +297,31 @@ export const SetPaymentForUser = async (req: clientRequest, res: Response) => {
 export const DeleteUser = async (req: Request, res: Response) => {
   const { id } = req.params;
   const userService = new UserService();
-  const firmService = new FirmService();
+  // const firmService = new FirmService();
 
   const response = await userService.deleteUserById(id);
 
   if (response["status"] === 200) {
-    const user: any = response["user"];
+    // const user: any = response["user"];
     //remove userId from firm
-    await firmService.removeCustomer(user.firmId, id);
+    // await firmService.removeCustomer(user.firmId, id);
+    res.status(response["status"]).json({
+      status: response["status"],
+      message: response["message"],
+    });
+  } else {
+    res
+      .status(response["status"])
+      .json({ status: response["status"], message: response["message"] });
+  }
+};
+export const DeleteUserFromDb = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const userService = new UserService();
+  // const firmService = new FirmService();
+  const response = await userService.deleteParmanentUserById(id);
+
+  if (response["status"] === 200) {
     res.status(response["status"]).json({
       status: response["status"],
       message: response["message"],
