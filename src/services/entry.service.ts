@@ -112,9 +112,15 @@ export class EntryService {
 
       // 🔹 CASE 2: Filter provided → use exact range
       if (fromDate && toDate) {
+        const startOfDay = new Date(fromDate);
+        startOfDay.setHours(0, 0, 0, 0); // 12:00 AM
+
+        const endOfDay = new Date(fromDate);
+        endOfDay.setHours(23, 59, 59, 999); // 11:59:59 PM
+
         query.date = {
-          $gte: new Date(fromDate),
-          $lte: new Date(toDate),
+          $gte: startOfDay,
+          $lte: endOfDay,
         };
       }
 
