@@ -115,7 +115,7 @@ export class EntryService {
         const startOfDay = new Date(fromDate);
         startOfDay.setHours(0, 0, 0, 0); // 12:00 AM
 
-        const endOfDay = new Date(fromDate);
+        const endOfDay = new Date(toDate);
         endOfDay.setHours(23, 59, 59, 999); // 11:59:59 PM
 
         query.date = {
