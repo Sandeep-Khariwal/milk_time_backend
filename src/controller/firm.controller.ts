@@ -11,6 +11,7 @@ export const CreateFirm = async (req: Request, res: Response) => {
 
   if (adminResp["status"] === 200) {
     const admin = adminResp["admin"];
+    const token = adminResp["token"];
     const firmResp: any = await firmService.createFirm({
       name: data.firmName,
       admin: admin._id,
@@ -23,7 +24,9 @@ export const CreateFirm = async (req: Request, res: Response) => {
         status: firmResp["status"],
         firm: firmResp["firm"],
         admin,
+        token,
         message: firmResp["message"],
+
       });
     } else {
       res

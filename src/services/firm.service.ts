@@ -241,7 +241,7 @@ export class FirmService {
 
       return {
         status: 200,
-        stocks: updatedFirm.stocks,
+        stocks: updatedFirm?.stocks,
         message: "Stock increased successfully!!",
       };
     } catch (error: any) {

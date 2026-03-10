@@ -93,7 +93,7 @@ export class UserService {
       const savedUser = await User.findByIdAndUpdate(id, updateData, {
         new: true,
       });
-      
+
       return { status: 200, user: savedUser, message: "User updated!!" };
     } catch (error: any) {
       return { status: 500, message: error.message };
@@ -325,11 +325,20 @@ export class UserService {
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(data.password, saltRounds);
 
+      const subscriptionExp = new Date();
+      subscriptionExp.setHours(0, 0, 0, 0);
+      const token = generateAccessToken({
+        _id: user._id,
+        name: user.name,
+        phoneNumber: user.phoneNumber,
+        subscriptionExp,
+      });
+
       user.password = hashedPassword;
 
       const savedUser = await user.save();
 
-      return { status: 200, admin: savedUser, message: "User Created!!" };
+      return { status: 200, admin: savedUser, token, message: "User Created!!" };
     } catch (error: any) {
       return { status: 500, message: error.message };
     }
@@ -402,8 +411,6 @@ export class UserService {
   }
   public async addEarnings(id: string, amount: number) {
     try {
-      console.log("addingEarning : ", id, amount);
-
       const user = await User.findByIdAndUpdate(id, {
         $inc: { earnings: amount },
       });

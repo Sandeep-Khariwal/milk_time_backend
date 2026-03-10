@@ -29,7 +29,9 @@ userRouter.put("/deleteFromDb/:id", DeleteUserFromDb);
 userRouter.put("/setPayment/:id", SetPaymentForUser);
 userRouter.put("/restore/:id", RestoreUserById);
 
-userRouter.get("/getUser", authenticateToken, GetUser);
+userRouter.get("/getUser", 
+  // authenticateToken,
+   GetUser);
 userRouter.get("/getUser/:id", GetUserById);
 userRouter.get("/getDeletedUser/:id", GetDeletedUsers);
 

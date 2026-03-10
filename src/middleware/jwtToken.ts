@@ -1,6 +1,5 @@
-
 import { NextFunction, Request, Response } from "express";
-import jwt, { Secret } from "jsonwebtoken"
+import jwt, { Secret } from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -16,6 +15,9 @@ export const generateAccessToken = (data: {
     name: data.name,
     subscriptionExp: data.subscriptionExp,
   };
+
+  console.log("jwt payload : ", payload);
+
   return jwt.sign(payload, process.env.TOKEN_SECRET as Secret, {
     expiresIn: "365d",
   });
@@ -31,7 +33,7 @@ export const blacklistedTokens = new Set();
 export const authenticateToken = (
   req: clientRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): void => {
   try {
     const brearerToken = req.headers["authorization"];
@@ -54,7 +56,6 @@ export const authenticateToken = (
       authHeader,
       process.env.TOKEN_SECRET as string,
       (err: any, user: any) => {
-        
         if (err) {
           return res.status(403).json("Error occure in middleware");
         }
@@ -63,14 +64,20 @@ export const authenticateToken = (
           return res.status(401).json({ message: "Token expired" });
         }
 
+        // const today = new Date();
+        // const subscriptionExp = new Date(user.subscriptionExp);
+        // if (today > subscriptionExp) {
+        //   console.log("subscription expired");
+        //   return res.status(403).json({ status:403,user, message: "Subscription expired" });
+        // }
+
         if (!user.active && new Date() > user.endDate) {
           return res.status(401).json({ message: "expired" });
         }
         req.user = user;
         next();
-      }
+      },
     );
-    
   } catch (error) {
     res.status(401).json({ message: "expired" });
   }

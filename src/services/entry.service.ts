@@ -126,8 +126,8 @@ export class EntryService {
 
       const entries = await Entry.find(query)
         .sort({ date: 1 }) // newest first
-        .skip(fromDate && toDate ? 0 : skipValue)
-        .limit(fromDate && toDate ? 0 : limit);
+        // .skip(fromDate && toDate ? 0 : skipValue)
+        // .limit(fromDate && toDate ? 0 : limit);
 
       return { status: 200, entries };
     } catch (error: any) {
