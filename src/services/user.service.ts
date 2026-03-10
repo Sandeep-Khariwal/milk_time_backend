@@ -54,8 +54,12 @@ export class UserService {
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-      const user= await User.findByIdAndUpdate(id, { $set: { password: hashedPassword } } , {new:true});
-    
+      const user = await User.findByIdAndUpdate(
+        id,
+        { $set: { password: hashedPassword } },
+        { new: true },
+      );
+
       return { status: 200, user, message: "Password Updated!!" };
     } catch (error: any) {
       return { status: 500, message: error.message };
@@ -75,18 +79,21 @@ export class UserService {
     },
   ) {
     try {
-      const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(data.password, saltRounds);
-
+      let hashedPassword;
+      if (data.password) {
+        const saltRounds = 10;
+        hashedPassword = await bcrypt.hash(data.password, saltRounds);
+      }
       const updateData = {
         ...data,
         buffaloRate: data.buffaloRate,
         cowRate: data.cowRate,
-        password:hashedPassword
+        password: hashedPassword,
       };
       const savedUser = await User.findByIdAndUpdate(id, updateData, {
         new: true,
       });
+      
       return { status: 200, user: savedUser, message: "User updated!!" };
     } catch (error: any) {
       return { status: 500, message: error.message };
@@ -240,7 +247,6 @@ export class UserService {
     }
   }
 
-
   public async getAllFarmersByFirmId(id: string) {
     try {
       const users: any = await User.find({
@@ -371,9 +377,9 @@ export class UserService {
   }
   public async deleteParmanentUserById(id: string) {
     try {
-       await User.findByIdAndDelete(id);
+      await User.findByIdAndDelete(id);
 
-      return { status: 200,  message: "User Deleted!!" };
+      return { status: 200, message: "User Deleted!!" };
     } catch (error: any) {
       return { status: 500, message: error.message };
     }
