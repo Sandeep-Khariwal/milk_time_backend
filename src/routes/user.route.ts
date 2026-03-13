@@ -30,7 +30,7 @@ userRouter.put("/setPayment/:id", SetPaymentForUser);
 userRouter.put("/restore/:id", RestoreUserById);
 
 userRouter.get("/getUser", 
-  // authenticateToken,
+  authenticateToken,
    GetUser);
 userRouter.get("/getUser/:id", GetUserById);
 userRouter.get("/getDeletedUser/:id", GetDeletedUsers);

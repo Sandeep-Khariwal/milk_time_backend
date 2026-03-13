@@ -293,13 +293,30 @@ export class UserService {
         return { status: 500, message: "Invalid email or password" };
       }
 
-      const token = generateAccessToken({
+      let tokenPayload: any = {
         _id: user._id,
         name: user.name,
         phoneNumber: user.phoneNumber,
-      });
+      };
 
-      return { status: 200, user, token, message: "Login successfully!!" };
+      let isSubscriptionExp = false;
+      if (user.subscriptionExp) {
+        tokenPayload.subscriptionExp = user.subscriptionExp;
+
+        const today = new Date();
+        const subscriptionExp = new Date(user.subscriptionExp);
+        isSubscriptionExp = today > subscriptionExp;
+      }
+
+      const token = generateAccessToken(tokenPayload);
+
+      return {
+        status: 200,
+        user,
+        token,
+        isSubscriptionExp,
+        message: "Login successfully!!",
+      };
     } catch (error: any) {
       return { status: 500, message: error.message };
     }
@@ -335,10 +352,16 @@ export class UserService {
       });
 
       user.password = hashedPassword;
+      user.subscriptionExp = subscriptionExp;
 
       const savedUser = await user.save();
 
-      return { status: 200, admin: savedUser, token, message: "User Created!!" };
+      return {
+        status: 200,
+        admin: savedUser,
+        token,
+        message: "User Created!!",
+      };
     } catch (error: any) {
       return { status: 500, message: error.message };
     }

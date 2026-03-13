@@ -82,6 +82,7 @@ export const LoginUser = async (req: Request, res: Response) => {
       status: response["status"],
       user: response["user"],
       token: response["token"],
+      isSubscriptionExp: response["isSubscriptionExp"],
       message: response["message"],
     });
   } else {

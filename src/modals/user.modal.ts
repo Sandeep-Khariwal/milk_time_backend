@@ -18,6 +18,7 @@ interface UserModel {
   milkEntry?: string[];
   history?: string[];
   purchasedItem?: { item: string; quantity: number; amount: number }[];
+  subscriptionExp: Date
 }
 const userSchema = new Schema<UserModel>(
   {
@@ -96,6 +97,10 @@ const userSchema = new Schema<UserModel>(
       default: [],
       ref: "history",
     },
+    subscriptionExp:{
+      type: Date,
+      default: new Date()
+    }
   },
   { timestamps: true }
 );
