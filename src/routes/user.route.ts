@@ -35,8 +35,14 @@ userRouter.get("/getUser",
 userRouter.get("/getUser/:id", GetUserById);
 userRouter.get("/getDeletedUser/:id", GetDeletedUsers);
 
-userRouter.get("/getAllDistributers/:id", GetAllDistributers);
-userRouter.get("/getAllCustomers/:id", getAllCustomers);
-userRouter.get("/getAllFarmers/:id", getAllFarmers);
+userRouter.get("/getAllDistributers/:id",
+  authenticateToken,
+   GetAllDistributers);
+userRouter.get("/getAllCustomers/:id", 
+  authenticateToken, 
+  getAllCustomers);
+userRouter.get("/getAllFarmers/:id", 
+  authenticateToken,
+  getAllFarmers);
 
 export default userRouter;

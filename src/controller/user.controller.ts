@@ -12,7 +12,7 @@ export const CreateUser = async (req: Request, res: Response) => {
   const userService = new UserService();
   const firmServices = new FirmService();
   let response;
-  
+
   if (data._id) {
     response = await userService.updateUser(data._id, data);
   } else {
@@ -208,13 +208,28 @@ export const getAllCustomers = async (req: clientRequest, res: Response) => {
   const { id } = req.params;
   const userService = new UserService();
   const entryService = new EntryService();
+  const currentTime = new Date();
+  const currentHour = currentTime.getHours();
+  const isMorning = currentHour < 15;
 
   const response = await userService.getAllCustomersByFirmId(id);
-  const resp1 = await entryService.getAllUserIdIfTodayEntry(id);
+  let resp1;
+
+  if (isMorning) {
+    resp1 = await entryService.getAllUserIdIfTodayMorningEntry(id);
+  } else {
+    resp1 = await entryService.getAllUserIdIfTodayEveningEntry(id);
+  }
 
   if (response["status"] === 200 && resp1["status"] === 200) {
     const userIds = resp1["users"]?.map((usr: any) => usr.customer);
     const formatedUser = response["users"]?.map((usrs: any) => {
+      // const usrs = u.toObject();
+      const morningMilk =
+        usrs?.cowMilk?.morningTimeMilk || usrs?.buffaloMilk?.morningTimeMilk;
+      const eveningMilk =
+        usrs?.cowMilk?.eveningTimeMilk || usrs?.buffaloMilk?.eveningTimeMilk;
+
       if (userIds?.includes(usrs._id)) {
         return {
           ...usrs,
@@ -223,7 +238,7 @@ export const getAllCustomers = async (req: clientRequest, res: Response) => {
       } else {
         return {
           ...usrs,
-          milkUpdated: false,
+          milkUpdated: isMorning ? !morningMilk : !eveningMilk,
         };
       }
     });
@@ -244,13 +259,29 @@ export const getAllFarmers = async (req: clientRequest, res: Response) => {
   const userService = new UserService();
   const entryService = new EntryService();
 
+  const currentTime = new Date();
+  const currentHour = currentTime.getHours();
+  const isMorning = currentHour < 15;
+
   const response = await userService.getAllFarmersByFirmId(id);
-    const resp1 = await entryService.getAllUserIdIfTodayEntry(id);
+  let resp1;
+
+  if (isMorning) {
+    resp1 = await entryService.getAllUserIdIfTodayMorningEntry(id);
+  } else {
+    resp1 = await entryService.getAllUserIdIfTodayEveningEntry(id);
+  }
 
   if (response["status"] === 200 && resp1["status"] === 200) {
-        const userIds = resp1["users"]?.map((usr: any) => usr.customer);
+    const userIds = resp1["users"]?.map((usr: any) => usr.customer);
     const formatedUser = response["users"]?.map((u: any) => {
-      const usrs = u.toObject()
+      const usrs = u.toObject();
+
+      const morningMilk =
+        usrs?.cowMilk?.morningTimeMilk || usrs?.buffaloMilk?.morningTimeMilk;
+      const eveningMilk =
+        usrs?.cowMilk?.eveningTimeMilk || usrs?.buffaloMilk?.eveningTimeMilk;
+
       if (userIds?.includes(usrs._id)) {
         return {
           ...usrs,
@@ -259,10 +290,11 @@ export const getAllFarmers = async (req: clientRequest, res: Response) => {
       } else {
         return {
           ...usrs,
-          milkUpdated: false,
+          milkUpdated: isMorning ? !morningMilk : !eveningMilk,
         };
       }
     });
+
     res.status(response["status"]).json({
       status: response["status"],
       users: formatedUser,

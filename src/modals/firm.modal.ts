@@ -8,7 +8,8 @@ interface FirmModel {
   distributers: string[];
   customers: string[];
   farmers: string[];
-  stocks: { item: string; quantity: number , price:number }[];
+  stocks: { item: string; quantity: number; price: number }[];
+  subscriptionExp: Date;
 }
 const firmSchema = new Schema<FirmModel>(
   {
@@ -28,7 +29,7 @@ const firmSchema = new Schema<FirmModel>(
     admin: {
       type: String,
       default: "",
-      ref:"user"
+      ref: "user",
     },
     distributers: {
       type: [String],
@@ -59,10 +60,14 @@ const firmSchema = new Schema<FirmModel>(
           },
         },
       ],
-      default:[]
+      default: [],
+    },
+    subscriptionExp: {
+      type: Date,
+      default: new Date(),
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default model<FirmModel>("firm", firmSchema);

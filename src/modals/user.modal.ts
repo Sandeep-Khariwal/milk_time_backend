@@ -8,17 +8,33 @@ interface UserModel {
   token: string;
   password: string;
   firmId: string;
-  userCode:string;
+  userCode: string;
   isDeleted: boolean;
 
   // fields for customers
   earnings?: number;
   buffaloRate?: number;
   cowRate?: number;
+  cowMilk?: {
+    activeCowMilk: boolean;
+    fixedAmount: boolean;
+    fatAmount: boolean;
+    snfAmount: boolean;
+    morningTimeMilk: boolean;
+    eveningTimeMilk: boolean;
+  };
+  buffaloMilk?: {
+    activeBuffaloMilk: boolean;
+    fixedAmount: boolean;
+    fatAmount: boolean;
+    snfAmount: boolean;
+    morningTimeMilk: boolean;
+    eveningTimeMilk: boolean;
+  };
   milkEntry?: string[];
   history?: string[];
+
   purchasedItem?: { item: string; quantity: number; amount: number }[];
-  subscriptionExp: Date
 }
 const userSchema = new Schema<UserModel>(
   {
@@ -87,6 +103,62 @@ const userSchema = new Schema<UserModel>(
       ],
       default: [],
     },
+    cowMilk: {
+      type: {
+        activeCowMilk: {
+          type: Boolean,
+          default: false,
+        },
+        fixedAmount: {
+          type: Boolean,
+          default: false,
+        },
+        fatAmount: {
+          type: Boolean,
+          default: false,
+        },
+        snfAmount: {
+          type: Boolean,
+          default: false,
+        },
+        morningTimeMilk: {
+          type: Boolean,
+          default: false,
+        },
+        eveningTimeMilk: {
+          type: Boolean,
+          default: false,
+        },
+      },
+    },
+    buffaloMilk: {
+      type: {
+        activeBuffaloMilk: {
+          type: Boolean,
+          default: false,
+        },
+        fixedAmount: {
+          type: Boolean,
+          default: false,
+        },
+        fatAmount: {
+          type: Boolean,
+          default: false,
+        },
+        snfAmount: {
+          type: Boolean,
+          default: false,
+        },
+        morningTimeMilk: {
+          type: Boolean,
+          default: false,
+        },
+        eveningTimeMilk: {
+          type: Boolean,
+          default: false,
+        },
+      },
+    },
     milkEntry: {
       type: [String],
       default: [],
@@ -96,13 +168,9 @@ const userSchema = new Schema<UserModel>(
       type: [String],
       default: [],
       ref: "history",
-    },
-    subscriptionExp:{
-      type: Date,
-      default: new Date()
     }
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default model<UserModel>("user", userSchema);

@@ -1,6 +1,5 @@
 import { randomUUID } from "crypto";
 import Entry from "../modals/entries.modal";
-import { log } from "console";
 
 export class EntryService {
   public async createEntry(data: {
@@ -124,10 +123,9 @@ export class EntryService {
         };
       }
 
-      const entries = await Entry.find(query)
-        .sort({ date: 1 }) // newest first
-        // .skip(fromDate && toDate ? 0 : skipValue)
-        // .limit(fromDate && toDate ? 0 : limit);
+      const entries = await Entry.find(query).sort({ date: 1 }); // newest first
+      // .skip(fromDate && toDate ? 0 : skipValue)
+      // .limit(fromDate && toDate ? 0 : limit);
 
       return { status: 200, entries };
     } catch (error: any) {
@@ -135,24 +133,38 @@ export class EntryService {
     }
   }
 
-  public async getAllUserIdIfTodayEntry(id: string) {
+  public async getAllUserIdIfTodayMorningEntry(id: string) {
     try {
       // Get today's start and end time
-      const now = new Date();
-      const hours = now.getHours(); // 0 - 23
 
       const startTime = new Date();
       const endTime = new Date();
+      // 🌅 AM: 00:00 → 11:59
+      startTime.setHours(0, 0, 0, 0);
+      endTime.setHours(14, 59, 59, 999);
 
-      if (hours < 12) {
-        // 🌅 AM: 00:00 → 11:59
-        startTime.setHours(0, 0, 0, 0);
-        endTime.setHours(11, 59, 59, 999);
-      } else {
-        // 🌇 PM: 12:00 → 23:59
-        startTime.setHours(12, 0, 0, 0);
-        endTime.setHours(23, 59, 59, 999);
-      }
+      const users = await Entry.find({
+        firm: id,
+        date: {
+          $gte: startTime,
+          $lte: endTime,
+        },
+      }).select("customer");
+
+      return { status: 200, users: users };
+    } catch (error: any) {
+      return { status: 500, message: error.message };
+    }
+  }
+  public async getAllUserIdIfTodayEveningEntry(id: string) {
+    try {
+      // Get today's start and end time
+      const startTime = new Date();
+      const endTime = new Date();
+
+      // 🌇 PM: 12:00 → 23:59
+      startTime.setHours(12, 0, 0, 0);
+      endTime.setHours(23, 59, 59, 999);
 
       const users = await Entry.find({
         firm: id,

@@ -13,6 +13,22 @@ export class UserService {
     userCode: string;
     buffaloRate: number;
     cowRate: number;
+    cowMilk?: {
+      activeCowMilk: boolean;
+      fixedAmount: boolean;
+      fatAmount: boolean;
+      snfAmount: boolean;
+      morningTimeMilk: boolean;
+      eveningTimeMilk: boolean;
+    };
+    buffaloMilk?: {
+      activeBuffaloMilk: boolean;
+      fixedAmount: boolean;
+      fatAmount: boolean;
+      snfAmount: boolean;
+      morningTimeMilk: boolean;
+      eveningTimeMilk: boolean;
+    };
   }) {
     try {
       const isUserPresent = await User.findOne({
@@ -27,14 +43,17 @@ export class UserService {
       user.phoneNumber = data.phoneNumber;
       user.userType = data.userType;
       user.firmId = data.firmId;
+
       if (data.userCode) {
         user.userCode = data.userCode;
       }
       if (data.buffaloRate) {
         user.buffaloRate = data.buffaloRate;
+        user.buffaloMilk = data.buffaloMilk;
       }
       if (data.cowRate) {
         user.cowRate = data.cowRate;
+        user.cowMilk = data.cowMilk;
       }
       const saltRounds = 10;
       const hashedPassword = await bcrypt.hash(data.password, saltRounds);
@@ -76,6 +95,20 @@ export class UserService {
       firmId: string;
       buffaloRate: number;
       cowRate: number;
+      cowMilk?: {
+        fixedAmount: boolean;
+        fatAmount: boolean;
+        snfAmount: boolean;
+        morningTimeMilk: boolean;
+        eveningTimeMilk: boolean;
+      };
+      buffaloMilk?: {
+        fixedAmount: boolean;
+        fatAmount: boolean;
+        snfAmount: boolean;
+        morningTimeMilk: boolean;
+        eveningTimeMilk: boolean;
+      };
     },
   ) {
     try {
@@ -226,6 +259,8 @@ export class UserService {
         "cowRate",
         "userCode",
         "userType",
+        "cowMilk",
+        "buffaloMilk"
       ]);
 
       if (!users && users.length) {
@@ -260,6 +295,8 @@ export class UserService {
         "buffaloRate",
         "userCode",
         "cowRate",
+        "cowMilk",
+        "buffaloMilk",
       ]);
 
       if (!users && users.length) {
@@ -273,13 +310,13 @@ export class UserService {
   }
   public async loginUser(number: string, password: string) {
     try {
-      const user = await User.findOne({
+      const user:any = await User.findOne({
         phoneNumber: number,
         isDeleted: false,
       }).populate([
         {
           path: "firmId",
-          select: ["_id", "name"],
+          select: ["_id", "name","subscriptionExp"],
         },
       ]);
 
@@ -295,18 +332,21 @@ export class UserService {
 
       let tokenPayload: any = {
         _id: user._id,
+        instituteId:user.firmId._id,
         name: user.name,
         phoneNumber: user.phoneNumber,
       };
 
       let isSubscriptionExp = false;
-      if (user.subscriptionExp) {
-        tokenPayload.subscriptionExp = user.subscriptionExp;
+      if (user.firmId?.subscriptionExp) {
+        tokenPayload.subscriptionExp = user.firmId?.subscriptionExp;
 
         const today = new Date();
-        const subscriptionExp = new Date(user.subscriptionExp);
+        const subscriptionExp = new Date(user.firmId?.subscriptionExp);
+        console.log("today subscriptionExp : ",today,subscriptionExp);
         isSubscriptionExp = today > subscriptionExp;
       }
+      
 
       const token = generateAccessToken(tokenPayload);
 
@@ -344,6 +384,7 @@ export class UserService {
 
       const subscriptionExp = new Date();
       subscriptionExp.setHours(0, 0, 0, 0);
+
       const token = generateAccessToken({
         _id: user._id,
         name: user.name,
@@ -352,7 +393,6 @@ export class UserService {
       });
 
       user.password = hashedPassword;
-      user.subscriptionExp = subscriptionExp;
 
       const savedUser = await user.save();
 

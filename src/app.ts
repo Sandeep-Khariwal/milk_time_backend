@@ -8,9 +8,11 @@ import userRouter from "./routes/user.route";
 import firmRouter from "./routes/firm.route";
 import entryRouter from "./routes/entries.route";
 import historyRouter from "./routes/history.route";
+import paymentRouter from "./routes/payment.route";
 import dns from "dns";
 import { PrivacyPloicy } from "./helper/privacyPolicy";
 import { DeleteHtmlForm } from "./helper/deleteAccount";
+import Razorpay from "razorpay";
 // dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 dotenv.config();
@@ -22,10 +24,10 @@ dotenv.config();
 // }
 
 // Razorpay setup
-// export const myRazorpayInstance = new Razorpay({
-//   key_id: process.env.RAZORPAY_API_KEY!,
-//   key_secret: process.env.RAZORPAY_API_SECRET!,
-// });
+export const myRazorpayInstance = new Razorpay({
+  key_id: process.env.RAZORPAY_API_KEY!,
+  key_secret: process.env.RAZORPAY_API_SECRET!,
+});
 
 // Worker Process
 const startServer = async () => {
@@ -59,6 +61,7 @@ const startServer = async () => {
     app.use(`/api/${VERSION}/firm`, firmRouter);
     app.use(`/api/${VERSION}/entry`, entryRouter);
     app.use(`/api/${VERSION}/history`, historyRouter);
+    app.use(`/api/${VERSION}/payment`, paymentRouter);
 
     // html content
     app.get("/privacy-policy", (req, res) => {

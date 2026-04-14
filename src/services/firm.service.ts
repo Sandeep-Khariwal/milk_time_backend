@@ -1,4 +1,3 @@
-import { authenticateToken } from "./../middleware/jwtToken";
 import { randomUUID } from "crypto";
 import Firm from "../modals/firm.modal";
 
@@ -10,10 +9,15 @@ export class FirmService {
       firm.name = data.name;
       firm.admin = data.admin;
 
+      const subscriptionExp = new Date();
+      subscriptionExp.setHours(0, 0, 0, 0);
+
+      firm.subscriptionExp = subscriptionExp;
+
       const savedFirm = await firm.save();
 
       return { status: 200, firm: savedFirm, message: "Firm Created!!" };
-    } catch (error:any) {
+    } catch (error: any) {
       return { status: 500, message: error.message };
     }
   }
@@ -29,7 +33,7 @@ export class FirmService {
       }
 
       return { status: 200, message: "name updated successfully!!" };
-    } catch (error:any) {
+    } catch (error: any) {
       return { status: 500, message: error.message };
     }
   }
@@ -44,7 +48,7 @@ export class FirmService {
       }
 
       return { status: 200, message: "updated successfully!!" };
-    } catch (error:any) {
+    } catch (error: any) {
       return { status: 500, message: error.message };
     }
   }
@@ -59,11 +63,11 @@ export class FirmService {
       }
 
       return { status: 200, message: "Updated successfully!!" };
-    } catch (error:any) {
+    } catch (error: any) {
       return { status: 500, message: error.message };
     }
   }
-    public async removeDistributer(id: string, dId: string) {
+  public async removeDistributer(id: string, dId: string) {
     try {
       const firm = await Firm.findByIdAndUpdate(id, {
         $pull: { distributers: dId },
@@ -74,7 +78,7 @@ export class FirmService {
       }
 
       return { status: 200, message: "Updated successfully!!" };
-    } catch (error:any) {
+    } catch (error: any) {
       return { status: 500, message: error.message };
     }
   }
@@ -87,9 +91,9 @@ export class FirmService {
       if (!firm) {
         return { status: 404, message: "Firm not found!!" };
       }
- 
+
       return { status: 200, message: "Updated successfully!!" };
-    } catch (error:any) {
+    } catch (error: any) {
       return { status: 500, message: error.message };
     }
   }
@@ -102,9 +106,9 @@ export class FirmService {
       if (!firm) {
         return { status: 404, message: "Firm not found!!" };
       }
- 
+
       return { status: 200, message: "Updated successfully!!" };
-    } catch (error:any) {
+    } catch (error: any) {
       return { status: 500, message: error.message };
     }
   }
@@ -115,12 +119,16 @@ export class FirmService {
       item: string;
       quantity: number;
       price: number;
-    }
+    },
   ) {
     try {
-      const firm = await Firm.findByIdAndUpdate(id, {
-        $push: { stocks: data },
-      },{new:true});
+      const firm = await Firm.findByIdAndUpdate(
+        id,
+        {
+          $push: { stocks: data },
+        },
+        { new: true },
+      );
 
       if (!firm) {
         return { status: 404, message: "Firm not found!!" };
@@ -131,7 +139,7 @@ export class FirmService {
         stocks: firm.stocks,
         message: "Stocks created successfully!!",
       };
-    } catch (error:any) {
+    } catch (error: any) {
       return { status: 500, message: error.message };
     }
   }
@@ -141,21 +149,21 @@ export class FirmService {
       item: string;
       quantity: number;
       price: number;
-      _id:string
-    }
+      _id: string;
+    },
   ) {
     try {
-    const firm = await Firm.findOneAndUpdate(
-      { _id: id, "stocks._id": data._id },
-      {
-        $set: {
-          "stocks.$.item": data.item,
-          "stocks.$.quantity": data.quantity,
-          "stocks.$.price": data.price,
+      const firm = await Firm.findOneAndUpdate(
+        { _id: id, "stocks._id": data._id },
+        {
+          $set: {
+            "stocks.$.item": data.item,
+            "stocks.$.quantity": data.quantity,
+            "stocks.$.price": data.price,
+          },
         },
-      },
-      { new: true }
-    );
+        { new: true },
+      );
 
       if (!firm) {
         return { status: 404, message: "Firm not found!!" };
@@ -166,36 +174,33 @@ export class FirmService {
         stocks: firm.stocks,
         message: "Stocks created successfully!!",
       };
-    } catch (error:any) {
+    } catch (error: any) {
       return { status: 500, message: error.message };
     }
   }
-  public async deleteStock(
-  firmId: string,
-  stockId: string
-) {
-  try {
-    const firm = await Firm.findByIdAndUpdate(
-      firmId,
-      {
-        $pull: { stocks: { _id: stockId } },   // remove matching stock
-      },
-      { new: true }
-    );
+  public async deleteStock(firmId: string, stockId: string) {
+    try {
+      const firm = await Firm.findByIdAndUpdate(
+        firmId,
+        {
+          $pull: { stocks: { _id: stockId } }, // remove matching stock
+        },
+        { new: true },
+      );
 
-    if (!firm) {
-      return { status: 404, message: "Firm not found!!" };
+      if (!firm) {
+        return { status: 404, message: "Firm not found!!" };
+      }
+
+      return {
+        status: 200,
+        stocks: firm.stocks,
+        message: "Stock deleted successfully!!",
+      };
+    } catch (error: any) {
+      return { status: 500, message: error.message };
     }
-
-    return {
-      status: 200,
-      stocks: firm.stocks,
-      message: "Stock deleted successfully!!",
-    };
-  } catch (error: any) {
-    return { status: 500, message: error.message };
   }
-}
 
   public async getAllStock(id: string) {
     try {
@@ -210,7 +215,7 @@ export class FirmService {
         stocks: firm.stocks,
         message: "Stocks fetch successfully!!",
       };
-    } catch (error:any) {
+    } catch (error: any) {
       return { status: 500, message: error.message };
     }
   }
@@ -220,7 +225,7 @@ export class FirmService {
       // Step 1: Check if the firm and specific stock exist
       const firm = await Firm.findOne(
         { _id: firmId, "stocks._id": stockId },
-        { "stocks.$": 1 } // fetch ONLY the matched stock
+        { "stocks.$": 1 }, // fetch ONLY the matched stock
       );
 
       if (!firm) {
@@ -236,7 +241,7 @@ export class FirmService {
         {
           $inc: { "stocks.$.quantity": quantity },
         },
-        { new: true }
+        { new: true },
       );
 
       return {
@@ -250,7 +255,6 @@ export class FirmService {
   }
 
   public async saleStock(id: string, stockId: string, quantity: number) {
-    
     try {
       const firm = await Firm.findById(id);
 
@@ -260,13 +264,11 @@ export class FirmService {
 
       // Find the stock item inside the firm's stocks
       const stock = firm.stocks.find((s: any) => s._id.toString() === stockId);
-      
-      
 
       if (!stock) {
         return { status: 404, message: "Stock item not found!!" };
       }
-      
+
       // Check if enough quantity is available
       if (stock.quantity < quantity) {
         return {
@@ -276,10 +278,9 @@ export class FirmService {
       }
 
       // Decrease quantity
-      stock.quantity = stock.quantity  - quantity;
+      stock.quantity = stock.quantity - quantity;
       // Save updated firm
       await firm.save();
-
 
       return {
         status: 200,
@@ -287,6 +288,62 @@ export class FirmService {
         message: "Stock updated successfully!!",
       };
     } catch (error: any) {
+      return { status: 500, message: error.message };
+    }
+  }
+
+  public async updateSubscription(id: string, months: number) {
+    try {
+      const firm = await Firm.findById(id);
+
+      if (!firm) {
+        return { status: 404, message: "Firm not found" };
+      }
+
+      // Use existing expiry date if available, else current date
+      let subscriptionExp = firm.subscriptionExp
+        ? new Date(firm.subscriptionExp)
+        : new Date();
+
+      console.log("months : ", months, typeof months);
+
+      // Add months
+      subscriptionExp.setMonth(subscriptionExp.getMonth() + Number(months));
+
+      // Optional: set expiry to end of day
+      subscriptionExp.setHours(23, 59, 59, 999);
+
+      // Update DB
+      firm.subscriptionExp = subscriptionExp;
+      await firm.save();
+
+      return {
+        status: 200,
+        message: "Subscription updated successfully",
+        data: subscriptionExp,
+      };
+    } catch (error: any) {
+      return { status: 500, message: error.message };
+    }
+  }
+
+  public async getAllFirms() {
+    try {
+      const firms:any = await Firm.find({}).select(["_id","name","admin","subscriptionExp"]).populate([
+        {
+          path:"admin",
+          select:["_id","phoneNumber"]
+        }
+      ]);
+
+      if (!firms && firms.length) {
+        return { status: 404, message: "firms not found!!" };
+      }
+      return {
+        status: 200,
+        firms,
+      };
+    } catch (error:any) {
       return { status: 500, message: error.message };
     }
   }

@@ -123,3 +123,21 @@ export const AddStock = async (req: Request, res: Response) => {
       .json({ status: response["status"], message: response["message"] });
   }
 };
+export const GetAllFirms = async (req: Request, res: Response) => {
+
+  const firmService = new FirmService();
+
+  //update stock
+  const response:any = await firmService.getAllFirms();
+
+  if (response["status"] === 200) {
+    res.status(response["status"]).json({
+      status: response["status"],
+      firms: response["firms"],
+    });
+  } else {
+    res
+      .status(response["status"])
+      .json({ status: response["status"], message: response["message"] });
+  }
+};

@@ -6,6 +6,7 @@ dotenv.config();
 export const generateAccessToken = (data: {
   _id: string;
   phoneNumber: string;
+  instituteId?: string;
   name: string;
   subscriptionExp?: Date;
 }): string => {
@@ -14,71 +15,72 @@ export const generateAccessToken = (data: {
     phoneNumber: data.phoneNumber,
     name: data.name,
     subscriptionExp: data.subscriptionExp,
+    instituteId: data.instituteId,
   };
-
-  console.log("jwt payload : ", payload);
-
   return jwt.sign(payload, process.env.TOKEN_SECRET as Secret, {
     expiresIn: "365d",
   });
 };
 
 export interface clientRequest extends Request {
-  id: string;
-  user: any;
+  id?: string;
+  user?: any;
 }
 
 export const blacklistedTokens = new Set();
-
 export const authenticateToken = (
-  req: clientRequest,
+  req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ): void => {
+  const customReq = req as clientRequest;
+
   try {
-    const brearerToken = req.headers["authorization"];
-    if (!brearerToken) {
-      res.status(401).json({ status: 401, message: "Token not found" });
-      return;
-    }
-    const authHeader = brearerToken.split(" ")[1];
+    const bearerToken = req.headers["authorization"];
 
-    if (!authHeader) {
-      res.status(403).json("Token not found");
+    console.log("bearerToken : ",bearerToken);
+    if (!bearerToken) {
+      res.status(401).json({ message: "Token not found" });
       return;
     }
 
-    if (blacklistedTokens.has(authHeader)) {
-      res.status(401).json({ status: 401, message: "Token has been expired " });
+    const token = bearerToken.split(" ")[1];
+    if (!token) {
+      res.status(403).json({ message: "Invalid token format" });
       return;
     }
-    jwt.verify(
-      authHeader,
-      process.env.TOKEN_SECRET as string,
-      (err: any, user: any) => {
-        if (err) {
-          return res.status(403).json("Error occure in middleware");
-        }
-        const currentTime = Math.floor(Date.now() / 1000);
-        if (user.exp < currentTime) {
-          return res.status(401).json({ message: "Token expired" });
-        }
 
-        // const today = new Date();
-        // const subscriptionExp = new Date(user.subscriptionExp);
-        // if (today > subscriptionExp) {
-        //   console.log("subscription expired");
-        //   return res.status(403).json({ status:403,user, message: "Subscription expired" });
-        // }
+    // ✅ sync verify (no callback issues)
+    let user: any;
+    try {
+      user = jwt.verify(token, process.env.TOKEN_SECRET as string);
+    } catch (err) {
+      res.status(403).json({ message: "JWT error" });
+      return;
+    }
 
-        if (!user.active && new Date() > user.endDate) {
-          return res.status(401).json({ message: "expired" });
-        }
-        req.user = user;
-        next();
-      },
-    );
+    const currentTime = Math.floor(Date.now() / 1000);
+    if (user.exp < currentTime) {
+      res.status(401).json({ message: "Token expired" });
+      return;
+    }
+
+    const today = new Date();
+    const subscriptionExp = new Date(user.subscriptionExp);
+    
+    if (today > subscriptionExp) {
+      console.log("subscriptionExp ✅",user.subscriptionExp);
+      res.status(403).json({ status:403, message: "Subscription expired",user });
+      return;
+    }
+
+      customReq.user = user;
+  
+      next();
+
+
   } catch (error) {
     res.status(401).json({ message: "expired" });
+    return
   }
 };
