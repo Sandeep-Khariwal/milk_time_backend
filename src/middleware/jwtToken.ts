@@ -37,8 +37,6 @@ export const authenticateToken = (
 
   try {
     const bearerToken = req.headers["authorization"];
-
-    console.log("bearerToken : ",bearerToken);
     if (!bearerToken) {
       res.status(401).json({ message: "Token not found" });
       return;
@@ -68,11 +66,11 @@ export const authenticateToken = (
     const today = new Date();
     const subscriptionExp = new Date(user.subscriptionExp);
     
-    if (today > subscriptionExp) {
-      console.log("subscriptionExp ✅",user.subscriptionExp);
-      res.status(403).json({ status:403, message: "Subscription expired",user });
-      return;
-    }
+    // if (today > subscriptionExp) {
+    //   console.log("subscriptionExp ✅",user.subscriptionExp);
+    //   res.status(403).json({ status:403, message: "Subscription expired",user });
+    //   return;
+    // }
 
       customReq.user = user;
   

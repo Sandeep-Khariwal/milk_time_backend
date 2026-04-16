@@ -338,14 +338,14 @@ export class UserService {
       };
 
       let isSubscriptionExp = false;
-      if (user.firmId?.subscriptionExp) {
-        tokenPayload.subscriptionExp = user.firmId?.subscriptionExp;
+      // if (user.firmId?.subscriptionExp) {
+      //   tokenPayload.subscriptionExp = user.firmId?.subscriptionExp;
 
-        const today = new Date();
-        const subscriptionExp = new Date(user.firmId?.subscriptionExp);
-        console.log("today subscriptionExp : ",today,subscriptionExp);
-        isSubscriptionExp = today > subscriptionExp;
-      }
+      //   const today = new Date();
+      //   const subscriptionExp = new Date(user.firmId?.subscriptionExp);
+      //   console.log("today subscriptionExp : ",today,subscriptionExp);
+      //   isSubscriptionExp = today > subscriptionExp;
+      // }
       
 
       const token = generateAccessToken(tokenPayload);
