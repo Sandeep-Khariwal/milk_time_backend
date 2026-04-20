@@ -109,7 +109,7 @@ export const AddStock = async (req: Request, res: Response) => {
   const firmService = new FirmService();
 
   //update stock
-  const response = await firmService.addStock(firmId, stockId, data.quantity);
+  const response = await firmService.addStock(firmId, data.quantity,stockId,);
 
   if (response["status"] === 200) {
     res.status(response["status"]).json({

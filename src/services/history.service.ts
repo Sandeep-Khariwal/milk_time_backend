@@ -161,8 +161,9 @@ export class HistoryService {
 
   public async deleteHistoryById(id: string) {
     try {
+      const history = await History.findById(id).select(["quantity","productName"])
       await History.findByIdAndDelete(id);
-      return { status: 200, message: "History Deleted" };
+      return { status: 200,history, message: "History Deleted" };
     } catch (error: any) {
       return { status: 500, message: error.message };
     }

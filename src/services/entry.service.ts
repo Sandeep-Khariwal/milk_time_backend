@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 import Entry from "../modals/entries.modal";
+import moment from "moment-timezone";
 
 export class EntryService {
   public async createEntry(data: {
@@ -14,6 +15,8 @@ export class EntryService {
     firm: string;
   }) {
     try {
+      const entryDate = new Date(data.date);
+      entryDate.setMinutes(entryDate.getMinutes() + 330);
       const entry = new Entry();
       entry._id = `ENTY-${randomUUID()}`;
       entry.weight = data.weight;
@@ -24,6 +27,7 @@ export class EntryService {
       entry.date = data.date;
       entry.rate = data.rate;
       entry.isBuffalo = data.isBuffalo;
+      entry.date = entryDate;
 
       if (data.fat) {
         entry.fat = data.fat;
@@ -45,8 +49,11 @@ export class EntryService {
     amount: number;
     customer: string;
     firm: string;
+    date: Date;
   }) {
     try {
+      const entryDate = new Date(data.date);
+      entryDate.setMinutes(entryDate.getMinutes() + 330);
       const entry = await Entry.findById(data._id);
 
       if (!entry) {
@@ -56,7 +63,7 @@ export class EntryService {
       const previousAmount = entry.amount;
 
       const actualAmount = data.amount - previousAmount;
-      await Entry.findByIdAndUpdate(data._id, data);
+      await Entry.findByIdAndUpdate(data._id, { ...data, date: entryDate });
 
       return {
         status: 200,

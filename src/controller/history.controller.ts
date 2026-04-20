@@ -157,6 +157,7 @@ export const DeleteHistory = async (req: Request, res: Response) => {
 
   const historyService = new HistoryService();
   const userService = new UserService();
+  const firmService = new FirmService();
 
   let isCustomer = false;
   let updateAmount = amount;
@@ -166,10 +167,15 @@ export const DeleteHistory = async (req: Request, res: Response) => {
   }
 
   // calculate the earnings
+  const userResp:any = await userService.getUserById(userId)
   await userService.addHistoryInUser(userId, id, updateAmount, isCustomer);
   const response: any = await historyService.deleteHistoryById(id);
 
   if (response["status"] === 200) {
+    const deletedHist = response["history"]
+    const firmId = userResp["user"].firmId._id
+    await firmService.addStock(firmId, deletedHist.quantity,"",deletedHist.productName);
+    
     res.status(response["status"]).json({
       status: response["status"],
       message: response["message"],

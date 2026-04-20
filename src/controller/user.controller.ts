@@ -210,7 +210,7 @@ export const getAllCustomers = async (req: clientRequest, res: Response) => {
   const entryService = new EntryService();
   const currentTime = new Date();
   const currentHour = currentTime.getHours();
-  const isMorning = currentHour < 15;
+  const isMorning = currentHour < 12;
 
   const response = await userService.getAllCustomersByFirmId(id);
   let resp1;
@@ -261,7 +261,7 @@ export const getAllFarmers = async (req: clientRequest, res: Response) => {
 
   const currentTime = new Date();
   const currentHour = currentTime.getHours();
-  const isMorning = currentHour < 15;
+  const isMorning = currentHour < 12;
 
   const response = await userService.getAllFarmersByFirmId(id);
   let resp1;

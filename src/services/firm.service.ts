@@ -220,26 +220,52 @@ export class FirmService {
     }
   }
 
-  public async addStock(firmId: string, stockId: string, quantity: number) {
+  public async addStock(
+    firmId: string,
+    quantity: number,
+    stockId?: string,
+    item?: string,
+  ) {
     try {
-      // Step 1: Check if the firm and specific stock exist
+      // Must have either stockId OR item
+      if (!stockId && !item) {
+        return {
+          status: 400,
+          message: "Please provide stockId or item name",
+        };
+      }
+
+      // Build match query
+      const stockMatch: any = stockId
+        ? { "stocks._id": stockId }
+        : { "stocks.item": item };
+
+      // Step 1: Check firm + stock exists
       const firm = await Firm.findOne(
-        { _id: firmId, "stocks._id": stockId },
-        { "stocks.$": 1 }, // fetch ONLY the matched stock
+        {
+          _id: firmId,
+          ...stockMatch,
+        },
+        { "stocks.$": 1 },
       );
 
       if (!firm) {
-        return { status: 404, message: "Firm or Stock not found!!" };
+        return {
+          status: 404,
+          message: "Firm or Stock not found!!",
+        };
       }
 
       // Step 2: Increase quantity
       const updatedFirm = await Firm.findOneAndUpdate(
         {
           _id: firmId,
-          "stocks._id": stockId, // match by _id (not item name)
+          ...stockMatch,
         },
         {
-          $inc: { "stocks.$.quantity": quantity },
+          $inc: {
+            "stocks.$.quantity": quantity,
+          },
         },
         { new: true },
       );
@@ -250,10 +276,12 @@ export class FirmService {
         message: "Stock increased successfully!!",
       };
     } catch (error: any) {
-      return { status: 500, message: error.message };
+      return {
+        status: 500,
+        message: error.message,
+      };
     }
   }
-
   public async saleStock(id: string, stockId: string, quantity: number) {
     try {
       const firm = await Firm.findById(id);
@@ -329,12 +357,14 @@ export class FirmService {
 
   public async getAllFirms() {
     try {
-      const firms:any = await Firm.find({}).select(["_id","name","admin","subscriptionExp"]).populate([
-        {
-          path:"admin",
-          select:["_id","phoneNumber"]
-        }
-      ]);
+      const firms: any = await Firm.find({})
+        .select(["_id", "name", "admin", "subscriptionExp"])
+        .populate([
+          {
+            path: "admin",
+            select: ["_id", "phoneNumber"],
+          },
+        ]);
 
       if (!firms && firms.length) {
         return { status: 404, message: "firms not found!!" };
@@ -343,7 +373,7 @@ export class FirmService {
         status: 200,
         firms,
       };
-    } catch (error:any) {
+    } catch (error: any) {
       return { status: 500, message: error.message };
     }
   }
