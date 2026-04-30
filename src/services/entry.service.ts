@@ -14,9 +14,20 @@ export class EntryService {
     date: Date;
     firm: string;
   }) {
+
+    const today = new Date();
+
+    // Get timezone difference in minutes
+    const diffMinutes = Math.abs(today.getTimezoneOffset());
+
+    // Clone selected date
+    const customDate = new Date(data.date);
+
+    // Add difference time
+    customDate.setMinutes(customDate.getMinutes() + diffMinutes);
+    
+
     try {
-      const entryDate = new Date(data.date);
-      entryDate.setMinutes(entryDate.getMinutes() + 330);
       const entry = new Entry();
       entry._id = `ENTY-${randomUUID()}`;
       entry.weight = data.weight;
@@ -27,12 +38,11 @@ export class EntryService {
       entry.date = data.date;
       entry.rate = data.rate;
       entry.isBuffalo = data.isBuffalo;
-      entry.date = entryDate;
+      entry.date = data.date //new Date(customDate);
 
       if (data.fat) {
         entry.fat = data.fat;
       }
-
       const savedEntry = await entry.save();
 
       return { status: 200, entry: savedEntry, message: "Entry Created!!" };
@@ -129,6 +139,9 @@ export class EntryService {
           $lte: endOfDay,
         };
       }
+
+      console.log("get entry query : ",query);
+      
 
       const entries = await Entry.find(query).sort({ date: 1 }); // newest first
       // .skip(fromDate && toDate ? 0 : skipValue)

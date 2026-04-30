@@ -274,25 +274,41 @@ export const getAllFarmers = async (req: clientRequest, res: Response) => {
 
   if (response["status"] === 200 && resp1["status"] === 200) {
     const userIds = resp1["users"]?.map((usr: any) => usr.customer);
+
+    const currentHour = new Date().getHours();
+    const isMorning = currentHour < 12;
+
     const formatedUser = response["users"]?.map((u: any) => {
       const usrs = u.toObject();
 
       const morningMilk =
         usrs?.cowMilk?.morningTimeMilk || usrs?.buffaloMilk?.morningTimeMilk;
+
       const eveningMilk =
         usrs?.cowMilk?.eveningTimeMilk || usrs?.buffaloMilk?.eveningTimeMilk;
 
-      if (userIds?.includes(usrs._id)) {
-        return {
-          ...usrs,
-          milkUpdated: true,
-        };
+      let milkUpdated:boolean = false;
+
+      if (isMorning) {
+        // 👉 Morning logic
+        if (!morningMilk) {
+          milkUpdated = true; // milk deta hi nahi → auto true
+        } else {
+          milkUpdated = userIds?.includes(usrs._id)!;
+        }
       } else {
-        return {
-          ...usrs,
-          milkUpdated: isMorning ? !morningMilk : !eveningMilk,
-        };
+        // 👉 Evening logic
+        if (!eveningMilk) {
+          milkUpdated = true; // milk deta hi nahi → auto true
+        } else {
+          milkUpdated = userIds?.includes(usrs._id)!;
+        }
       }
+
+      return {
+        ...usrs,
+        milkUpdated,
+      };
     });
 
     res.status(response["status"]).json({
