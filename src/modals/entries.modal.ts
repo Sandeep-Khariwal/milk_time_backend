@@ -10,7 +10,7 @@ interface EntriesModel {
   firm:string;
   timeZone:string;
   isBuffalo:boolean;
-  date: Date;
+  date: string;
 }
 
 const entriesSchema = new Schema<EntriesModel>(
@@ -50,7 +50,8 @@ const entriesSchema = new Schema<EntriesModel>(
       default:false
     },
     date: {
-      type: Date,
+      type: String,
+      default:""
     },
   },
   { timestamps: true }
