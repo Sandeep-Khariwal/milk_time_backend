@@ -8,7 +8,6 @@ import {
 } from "../helper/helperFunctions";
 
 export class EntryService {
-
   // ✅ CREATE ENTRY (original)
   public async createEntry(data: {
     weight: number;
@@ -96,41 +95,39 @@ export class EntryService {
       const limit = 31;
       const skipValue = Number(skip);
 
-      // 🔹 CASE 1: No filter → current month
+      // ✅ CASE 1: No filter → current month (IST safe)
       if (!fromDate && !toDate) {
-        const now = new Date();
+        const start = moment()
+          .tz("Asia/Kolkata")
+          .startOf("month") // 1st 12:00 AM IST
+          .toDate();
 
-        const startOfMonth = new Date(
-          now.getFullYear(),
-          now.getMonth(),
-          1,
-          0, 0, 0, 0
-        );
-
-        const endOfMonth = new Date(
-          now.getFullYear(),
-          now.getMonth() + 1,
-          0,
-          23, 59, 59, 999
-        );
+        const end = moment()
+          .tz("Asia/Kolkata")
+          .endOf("month") // last day 11:59 PM IST
+          .toDate();
 
         query.date = {
-          $gte: startOfMonth,
-          $lte: endOfMonth,
+          $gte: start,
+          $lte: end,
         };
       }
 
-      // 🔹 CASE 2: Filter applied
+      // ✅ CASE 2: Filter applied (IST safe)
       if (fromDate && toDate) {
-        const startOfDay = new Date(fromDate);
-        startOfDay.setHours(0, 0, 0, 0);
+        const start = moment
+          .tz(fromDate, "Asia/Kolkata")
+          .startOf("day") // 12:00 AM IST
+          .toDate();
 
-        const endOfDay = new Date(toDate);
-        endOfDay.setHours(23, 59, 59, 999);
+        const end = moment
+          .tz(toDate, "Asia/Kolkata")
+          .endOf("day") // 11:59 PM IST
+          .toDate();
 
         query.date = {
-          $gte: startOfDay,
-          $lte: endOfDay,
+          $gte: start,
+          $lte: end,
         };
       }
 
@@ -142,7 +139,6 @@ export class EntryService {
         .limit(fromDate && toDate ? 0 : limit);
 
       return { status: 200, entries };
-
     } catch (error: any) {
       return { status: 500, message: error.message };
     }
