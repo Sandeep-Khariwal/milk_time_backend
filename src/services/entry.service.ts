@@ -8,6 +8,8 @@ import {
 } from "../helper/helperFunctions";
 
 export class EntryService {
+
+  // ✅ CREATE ENTRY (original)
   public async createEntry(data: {
     weight: number;
     fat: number;
@@ -21,6 +23,7 @@ export class EntryService {
   }) {
     try {
       const entry = new Entry();
+
       entry._id = `ENTY-${randomUUID()}`;
       entry.weight = data.weight;
       entry.amount = data.amount;
@@ -29,11 +32,14 @@ export class EntryService {
       entry.timeZone = data.timeZone;
       entry.rate = data.rate;
       entry.isBuffalo = data.isBuffalo;
-      entry.date = formatDate(data.date); //new Date(customDate);
+
+      // ✅ ORIGINAL: just store date
+      entry.date = data.date;
 
       if (data.fat) {
         entry.fat = data.fat;
       }
+
       const savedEntry = await entry.save();
 
       return { status: 200, entry: savedEntry, message: "Entry Created!!" };
@@ -42,6 +48,7 @@ export class EntryService {
     }
   }
 
+  // ✅ EDIT ENTRY (original)
   public async editEntry(data: {
     _id: string;
     weight: number;
@@ -53,8 +60,6 @@ export class EntryService {
     date: Date;
   }) {
     try {
-      const entryDate = new Date(data.date);
-      entryDate.setMinutes(entryDate.getMinutes() + 330);
       const entry = await Entry.findById(data._id);
 
       if (!entry) {
@@ -62,75 +67,103 @@ export class EntryService {
       }
 
       const previousAmount = entry.amount;
-
       const actualAmount = data.amount - previousAmount;
-      await Entry.findByIdAndUpdate(data._id, { ...data, date: entryDate });
+
+      await Entry.findByIdAndUpdate(data._id, {
+        ...data,
+        date: data.date,
+      });
 
       return {
         status: 200,
-        actualAmount: actualAmount,
-        message: "Entry Created!!",
+        actualAmount,
+        message: "Entry Updated!!",
       };
     } catch (error: any) {
       return { status: 500, message: error.message };
     }
   }
 
-public async getEntriesByIds(id: string, data: any) {
-  try {
-    const { fromDate, toDate } = data;
+  // ✅ ORIGINAL FILTER LOGIC (DB-based, not string)
+  public async getEntriesByIds(id: string, data: any) {
+    try {
+      const { fromDate, toDate, skip = 0 } = data;
 
-    let entries = await Entry.find({
-      customer: id,
-    });
+      const query: any = {
+        customer: id,
+      };
 
-    const toNumber = (d: string) => {
-      const [day, month, year] = d.split("-");
-      return Number(`${year}${month}${day}`);
-    };
+      const limit = 31;
+      const skipValue = Number(skip);
 
-    // 🔹 CASE 1: filter applied
-    if (fromDate && toDate) {
-      const fromStr = formatDate(new Date(fromDate));
-      const toStr = formatDate(new Date(toDate));
+      // 🔹 CASE 1: No filter → current month
+      if (!fromDate && !toDate) {
+        const now = new Date();
 
-      const fromNum = toNumber(fromStr);
-      const toNum = toNumber(toStr);
+        const startOfMonth = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          1,
+          0, 0, 0, 0
+        );
 
-      entries = entries.filter((entry: any) => {
-        const entryNum = toNumber(entry.date);
-        return entryNum >= fromNum && entryNum <= toNum;
-      });
-    } 
-    // 🔹 CASE 2: no filter → current month
-    else {
-      const today = getTodayDDMMYYYY(); // "04-05-2026"
-      const [_, month, year] = today.split("-");
+        const endOfMonth = new Date(
+          now.getFullYear(),
+          now.getMonth() + 1,
+          0,
+          23, 59, 59, 999
+        );
 
-      entries = entries.filter((entry: any) => {
-        const [d, m, y] = entry.date.split("-");
-        return m === month && y === year;
-      });
+        query.date = {
+          $gte: startOfMonth,
+          $lte: endOfMonth,
+        };
+      }
+
+      // 🔹 CASE 2: Filter applied
+      if (fromDate && toDate) {
+        const startOfDay = new Date(fromDate);
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const endOfDay = new Date(toDate);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        query.date = {
+          $gte: startOfDay,
+          $lte: endOfDay,
+        };
+      }
+
+      console.log("get entry query :", query);
+
+      const entries = await Entry.find(query)
+        .sort({ date: 1 })
+        .skip(fromDate && toDate ? 0 : skipValue)
+        .limit(fromDate && toDate ? 0 : limit);
+
+      return { status: 200, entries };
+
+    } catch (error: any) {
+      return { status: 500, message: error.message };
     }
-
-    // optional sort after filtering
-    entries.sort((a: any, b: any) => toNumber(a.date) - toNumber(b.date));
-
-    return { status: 200, entries };
-  } catch (error: any) {
-    return { status: 500, message: error.message };
   }
-}
 
+  // ✅ MORNING ENTRY (original)
   public async getAllUserIdIfTodayMorningEntry(firmId: string) {
     try {
-      const today = getTodayDDMMYYYY();
-      const shift = getCurrentTimeZoneIST(); // 🔥 dynamic
+      const startTime = new Date();
+      const endTime = new Date();
+
+      startTime.setHours(0, 0, 0, 0);
+      endTime.setHours(11, 59, 59, 999);
 
       const users = await Entry.find({
         firm: firmId,
-        date: today,
-        timeZone: shift,
+        date: {
+          $gte: startTime,
+          $lte: endTime,
+        },
+        timeZone: "M",
       }).select("customer");
 
       return { status: 200, users };
@@ -138,13 +171,22 @@ public async getEntriesByIds(id: string, data: any) {
       return { status: 500, message: error.message };
     }
   }
+
+  // ✅ EVENING ENTRY (original)
   public async getAllUserIdIfTodayEveningEntry(firmId: string) {
     try {
-      const today = getTodayDDMMYYYY(); // same function you already use
+      const startTime = new Date();
+      const endTime = new Date();
+
+      startTime.setHours(12, 0, 0, 0);
+      endTime.setHours(23, 59, 59, 999);
 
       const users = await Entry.find({
         firm: firmId,
-        date: today,
+        date: {
+          $gte: startTime,
+          $lte: endTime,
+        },
         timeZone: "E",
       }).select("customer");
 
@@ -154,13 +196,18 @@ public async getEntriesByIds(id: string, data: any) {
     }
   }
 
+  // ✅ TODAY ENTRIES (original)
   public async getTodayEntriesByCustomer(firmId: string) {
     try {
-      const today = getTodayDDMMYYYY(); // "03-05-2026"
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+
+      const end = new Date();
+      end.setHours(23, 59, 59, 999);
 
       const entries = await Entry.find({
         firm: firmId,
-        date: today,
+        date: { $gte: start, $lte: end },
       }).populate([
         {
           path: "customer",
