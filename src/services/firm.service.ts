@@ -37,6 +37,26 @@ export class FirmService {
       return { status: 500, message: error.message };
     }
   }
+  public async getFirmInfoById(id: string) {
+    try {
+      const firm = await Firm.findById(id);
+
+      if (!firm) {
+        return { status: 404, message: "Firm not found!!" };
+      }
+
+      const firmInfo = {
+        customers:firm.customers.length,
+        farmers:firm.farmers.length,
+        stocks:firm.stocks.length,
+        distributers:firm.distributers.length
+      }
+
+      return { status: 200, firmInfo  };
+    } catch (error: any) {
+      return { status: 500, message: error.message };
+    }
+  }
   public async addNewCustomer(id: string, cId: string) {
     try {
       const firm = await Firm.findByIdAndUpdate(id, {
@@ -100,7 +120,7 @@ export class FirmService {
   public async addNewFarmer(id: string, fId: string) {
     try {
       const firm = await Firm.findByIdAndUpdate(id, {
-        $push: { distributers: fId },
+        $push: { farmers: fId },
       });
 
       if (!firm) {

@@ -6,10 +6,13 @@ interface EntriesModel {
   fat: number;
   rate:number;
   amount: number;
+  snf: number;
+  clr: number;
   customer:string;
   firm:string;
   timeZone:string;
   isBuffalo:boolean;
+  isEdited:boolean;
   date: Date;
 }
 
@@ -30,6 +33,14 @@ const entriesSchema = new Schema<EntriesModel>(
     amount: {
       type: Number,
     },
+    snf: {
+      type: Number,
+      default:0
+    },
+    clr: {
+      type: Number,
+      default:0
+    },
     rate: {
       type: Number,
       
@@ -46,6 +57,10 @@ const entriesSchema = new Schema<EntriesModel>(
       type: String,
     },
     isBuffalo: {
+      type: Boolean,
+      default:false
+    },
+    isEdited: {
       type: Boolean,
       default:false
     },

@@ -19,6 +19,8 @@ export const CreateUser = async (req: Request, res: Response) => {
     response = await userService.createUser(data);
   }
 
+  
+  
   if (response["status"] === 200) {
     let userResp: any;
     const user: any = response["user"];

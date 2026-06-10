@@ -19,6 +19,8 @@ export class EntryService {
     isBuffalo: boolean;
     date: Date;
     firm: string;
+    snf: number;
+    clr: number;
   }) {
     try {
       const entry = new Entry();
@@ -31,6 +33,8 @@ export class EntryService {
       entry.timeZone = data.timeZone;
       entry.rate = data.rate;
       entry.isBuffalo = data.isBuffalo;
+      entry.snf = data.snf;
+      entry.clr = data.clr;
 
       // ✅ ORIGINAL: just store date
       entry.date = data.date;
@@ -57,6 +61,8 @@ export class EntryService {
     customer: string;
     firm: string;
     date: Date;
+    snf?: number;
+    clr?: number;
   }) {
     try {
       const entry = await Entry.findById(data._id);
@@ -71,6 +77,7 @@ export class EntryService {
       await Entry.findByIdAndUpdate(data._id, {
         ...data,
         date: data.date,
+        isEdited: true,
       });
 
       return {
@@ -133,7 +140,7 @@ export class EntryService {
 
       const entries = await Entry.find(query)
         .sort({ date: 1 })
-        .skip(fromDate && toDate ? 0 : skipValue)
+        .skip(fromDate && toDate ? 0 : skipValue);
 
       return { status: 200, entries };
     } catch (error: any) {

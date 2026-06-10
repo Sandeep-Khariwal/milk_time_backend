@@ -85,6 +85,38 @@ export class UserService {
     }
   }
 
+  public async getAllUsers(firmId: string) {
+    const userCounts = await User.aggregate([
+      {
+        $match: {
+          firmId,
+          isDeleted: false,
+        },
+      },
+      {
+        $group: {
+          _id: "$userType",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const result = {
+      customers: 0,
+      farmers: 0,
+      distributers: 0,
+    };
+
+    userCounts.forEach((item) => {
+
+      if (item._id === "customer") result.customers = item.count;
+      if (item._id === "farmer") result.farmers = item.count;
+      if (item._id === "distributer") result.distributers = item.count;
+    });
+
+    return { status: 200, data: result };
+  }
+
   public async updateUser(
     id: string,
     data: {
@@ -260,7 +292,7 @@ export class UserService {
         "userCode",
         "userType",
         "cowMilk",
-        "buffaloMilk"
+        "buffaloMilk",
       ]);
 
       if (!users && users.length) {
@@ -310,13 +342,13 @@ export class UserService {
   }
   public async loginUser(number: string, password: string) {
     try {
-      const user:any = await User.findOne({
+      const user: any = await User.findOne({
         phoneNumber: number,
         isDeleted: false,
       }).populate([
         {
           path: "firmId",
-          select: ["_id", "name","subscriptionExp"],
+          select: ["_id", "name", "subscriptionExp"],
         },
       ]);
 
@@ -332,7 +364,7 @@ export class UserService {
 
       let tokenPayload: any = {
         _id: user._id,
-        instituteId:user.firmId._id,
+        instituteId: user.firmId._id,
         name: user.name,
         phoneNumber: user.phoneNumber,
       };
@@ -346,7 +378,6 @@ export class UserService {
       //   console.log("today subscriptionExp : ",today,subscriptionExp);
       //   isSubscriptionExp = today > subscriptionExp;
       // }
-      
 
       const token = generateAccessToken(tokenPayload);
 

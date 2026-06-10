@@ -29,20 +29,16 @@ userRouter.put("/deleteFromDb/:id", DeleteUserFromDb);
 userRouter.put("/setPayment/:id", SetPaymentForUser);
 userRouter.put("/restore/:id", RestoreUserById);
 
-userRouter.get("/getUser", 
-  authenticateToken,
-   GetUser);
+userRouter.get("/getUser", authenticateToken, GetUser);
 userRouter.get("/getUser/:id", GetUserById);
 userRouter.get("/getDeletedUser/:id", GetDeletedUsers);
 
-userRouter.get("/getAllDistributers/:id",
+userRouter.get(
+  "/getAllDistributers/:id",
   authenticateToken,
-   GetAllDistributers);
-userRouter.get("/getAllCustomers/:id", 
-  authenticateToken, 
-  getAllCustomers);
-userRouter.get("/getAllFarmers/:id", 
-  authenticateToken,
-  getAllFarmers);
+  GetAllDistributers,
+);
+userRouter.get("/getAllCustomers/:id", authenticateToken, getAllCustomers);
+userRouter.get("/getAllFarmers/:id", authenticateToken, getAllFarmers);
 
 export default userRouter;

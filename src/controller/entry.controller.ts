@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { EntryService } from "../services/entry.service";
 import { UserService } from "../services/user.service";
+import { FirmService } from "../services/firm.service";
 
 export const CreateEntry = async (req: Request, res: Response) => {
   const data = req.body;
@@ -66,13 +67,24 @@ export const GetUserEntries = async (req: Request, res: Response) => {
 export const GetTodayAllEntries = async (req: Request, res: Response) => {
   const { id } = req.params;
   const entriesService = new EntryService();
+  const firmService = new FirmService()
+  const userService = new UserService()
 
   const response = await entriesService.getTodayEntriesByCustomer(id);
+  const firmResp = await firmService.getFirmInfoById(id)
+  const userResp = await userService.getAllUsers(id)
 
-  if (response["status"] === 200) {
+  if (response["status"] === 200 && firmResp["status"] === 200 , userResp["status"]===200) {
+
+    const users = {
+      ...firmResp["firmInfo"],
+     farmers:userResp["data"].farmers
+    }
+    
     res.status(200).json({
       status: 200,
       data: response["entries"],
+      firmInfo:users
     });
   } else {
     res
