@@ -318,12 +318,12 @@ export class FirmService {
       }
 
       // Check if enough quantity is available
-      if (stock.quantity < quantity) {
-        return {
-          status: 400,
-          message: `Not enough stock! Available: ${stock.quantity}`,
-        };
-      }
+      // if (stock.quantity < quantity) {
+      //   return {
+      //     status: 400,
+      //     message: `Not enough stock! Available: ${stock.quantity}`,
+      //   };
+      // }
 
       // Decrease quantity
       stock.quantity = stock.quantity - quantity;

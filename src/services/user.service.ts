@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import User from "../modals/user.modal";
 import bcrypt from "bcryptjs";
 import { generateAccessToken } from "../middleware/jwtToken";
+import bookkeepingModel from "../modals/bookkeeping.model";
 
 export class UserService {
   public async createUser(data: {
@@ -108,7 +109,6 @@ export class UserService {
     };
 
     userCounts.forEach((item) => {
-
       if (item._id === "customer") result.customers = item.count;
       if (item._id === "farmer") result.farmers = item.count;
       if (item._id === "distributer") result.distributers = item.count;
@@ -564,6 +564,67 @@ export class UserService {
       );
 
       return { status: 200, nessage: "user updated!!" };
+    } catch (error: any) {
+      return { status: 500, message: error.message };
+    }
+  }
+
+  public async getUsersBookings(id: string) {
+    try {
+
+      const bookkeeping:any = await bookkeepingModel.find({
+        userId: id,
+      });
+
+      if (!bookkeeping && !bookkeeping.length) {
+        return {
+          status: 404,
+          message: "No Bookings Found!!",
+        };
+      }
+
+      return { status: 200,  bookkeeping };
+    } catch (error: any) {
+      return { status: 500, message: error.message };
+    }
+  }
+
+  public async createBookKeeping(
+    id: string,
+    data: {
+      cowWeight: number;
+      buffalowWeight: number;
+      cowAmount: number;
+      buffaloAmount: number;
+      totalAmount: number;
+    },
+  ) {
+    try {
+      const user = await User.findById(id);
+
+      if (!user) {
+        return {
+          status: 404,
+          message: "User Not Found!!",
+        };
+      }
+
+      const bookingKeep = new bookkeepingModel();
+      bookingKeep._id = `BKNK-${randomUUID()}`;
+      bookingKeep.userId = id;
+      bookingKeep.cowWeight = data.cowWeight;
+      bookingKeep.buffalowWeight = data.buffalowWeight;
+      bookingKeep.cowAmount = data.cowAmount;
+      bookingKeep.buffaloAmount = data.buffaloAmount;
+      bookingKeep.totalAmount = data.totalAmount;
+
+      const savedBookingKeep = await bookingKeep.save();
+
+      return {
+        status: 200,
+        nessage: "bookingKeep created!!",
+        bookingkeep: savedBookingKeep,
+      };
     } catch (error: any) {
       return { status: 500, message: error.message };
     }

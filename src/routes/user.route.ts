@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  CreateBookKeeping,
   CreateUser,
   DeleteUser,
   DeleteUserFromDb,
@@ -9,6 +10,7 @@ import {
   GetAllUsers,
   GetDeletedUsers,
   GetUser,
+  GetUserBookings,
   GetUserById,
   LoginUser,
   RestoreUserById,
@@ -19,8 +21,9 @@ import {
 import { authenticateToken } from "../middleware/jwtToken";
 const userRouter = express.Router();
 
-userRouter.post("/create", CreateUser);
+userRouter.post("/create/:id", CreateUser);
 userRouter.post("/login", LoginUser);
+userRouter.post("/createBooking/:id", CreateBookKeeping);
 userRouter.put("/updateAdmin/:id", UpdateNameAndPassword);
 userRouter.put("/saleProduct/:id", SaleProduct);
 
@@ -30,6 +33,7 @@ userRouter.put("/setPayment/:id", SetPaymentForUser);
 userRouter.put("/restore/:id", RestoreUserById);
 
 userRouter.get("/getUser", authenticateToken, GetUser);
+userRouter.get("/getUserBookings/:id", GetUserBookings);
 userRouter.get("/getUser/:id", GetUserById);
 userRouter.get("/getDeletedUser/:id", GetDeletedUsers);
 

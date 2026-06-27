@@ -113,6 +113,25 @@ export const GetUser = async (req: clientRequest, res: Response) => {
   }
 };
 
+export const GetUserBookings = async (req: Request, res: Response) => {
+  const {id} = req.params;
+  const userService = new UserService();
+
+  const response:any = await userService.getUsersBookings(id);
+
+  if (response["status"] === 200) {
+    res.status(response["status"]).json({
+      status: response["status"],
+      data: response["bookkeeping"],
+      message: response["message"],
+    });
+  } else {
+    res
+      .status(response["status"])
+      .json({ status: response["status"], message: response["message"] });
+  }
+};
+
 export const GetUserById = async (req: clientRequest, res: Response) => {
   const { id } = req.params;
   const userService = new UserService();
@@ -367,6 +386,7 @@ export const DeleteUser = async (req: Request, res: Response) => {
       .json({ status: response["status"], message: response["message"] });
   }
 };
+
 export const DeleteUserFromDb = async (req: Request, res: Response) => {
   const { id } = req.params;
   const userService = new UserService();
@@ -376,6 +396,25 @@ export const DeleteUserFromDb = async (req: Request, res: Response) => {
   if (response["status"] === 200) {
     res.status(response["status"]).json({
       status: response["status"],
+      message: response["message"],
+    });
+  } else {
+    res
+      .status(response["status"])
+      .json({ status: response["status"], message: response["message"] });
+  }
+};
+
+export const CreateBookKeeping = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const data = req.body
+  const userService = new UserService();
+  // const firmService = new FirmService();
+  const response = await userService.createBookKeeping(id,data);
+
+  if (response["status"] === 200) {
+    res.status(response["status"]).json({
+      data: response["bookingkeep"],
       message: response["message"],
     });
   } else {
