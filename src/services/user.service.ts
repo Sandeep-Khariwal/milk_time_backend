@@ -65,6 +65,8 @@ export class UserService {
 
       return { status: 200, user: savedUser, message: "User Created!!" };
     } catch (error: any) {
+      console.log("error : ",error);
+      
       return { status: 500, message: error.message };
     }
   }

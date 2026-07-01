@@ -21,7 +21,7 @@ import {
 import { authenticateToken } from "../middleware/jwtToken";
 const userRouter = express.Router();
 
-userRouter.post("/create/:id", CreateUser);
+userRouter.post("/create", CreateUser);
 userRouter.post("/login", LoginUser);
 userRouter.post("/createBooking/:id", CreateBookKeeping);
 userRouter.put("/updateAdmin/:id", UpdateNameAndPassword);
