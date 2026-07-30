@@ -3,6 +3,7 @@ import { model, Schema } from "mongoose";
 interface FirmModel {
   _id: string;
   name: string;
+  address: string;
   phoneNumber: string;
   admin: string;
   distributers: string[];
@@ -21,6 +22,11 @@ const firmSchema = new Schema<FirmModel>(
     name: {
       type: String,
       default: "",
+    },
+    address: {
+      type: String,
+      required: true,
+      trim: true,
     },
     phoneNumber: {
       type: String,

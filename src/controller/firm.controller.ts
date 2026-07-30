@@ -4,6 +4,8 @@ import { FirmService } from "../services/firm.service";
 
 export const CreateFirm = async (req: Request, res: Response) => {
   const data = req.body;
+  console.log("Firm data" , data );
+  
   const userService = new UserService();
   const firmService = new FirmService();
 
@@ -14,6 +16,7 @@ export const CreateFirm = async (req: Request, res: Response) => {
     const token = adminResp["token"];
     const firmResp: any = await firmService.createFirm({
       name: data.firmName,
+      address: data.address,
       admin: admin._id,
     });
 

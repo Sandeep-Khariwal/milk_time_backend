@@ -13,6 +13,7 @@ import dns from "dns";
 import { PrivacyPloicy } from "./helper/privacyPolicy";
 import { DeleteHtmlForm } from "./helper/deleteAccount";
 import Razorpay from "razorpay";
+import dairySaleRouter from "./routes/dairySale.route";
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 dotenv.config();
@@ -22,12 +23,14 @@ dotenv.config();
 // if (!fs.existsSync(uploadDir)) {
 //   fs.mkdirSync(uploadDir);
 // }
-
 // Razorpay setup
 export const myRazorpayInstance = new Razorpay({
   key_id: process.env.RAZORPAY_API_KEY!,
   key_secret: process.env.RAZORPAY_API_SECRET!,
 });
+
+
+
 
 // Worker Process
 const startServer = async () => {
@@ -62,6 +65,7 @@ const startServer = async () => {
     app.use(`/api/${VERSION}/entry`, entryRouter);
     app.use(`/api/${VERSION}/history`, historyRouter);
     app.use(`/api/${VERSION}/payment`, paymentRouter);
+    app.use(`/api/${VERSION}/dairy-sale`, dairySaleRouter);
 
     // html content
     app.get("/privacy-policy", (req, res) => {
