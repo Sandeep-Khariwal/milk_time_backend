@@ -2,12 +2,18 @@ import { randomUUID } from "crypto";
 import Firm from "../modals/firm.modal";
 
 export class FirmService {
-  public async createFirm(data: { name: string; admin: string }) {
+  public async createFirm(data: {
+    name: string;
+    address: string;
+    admin: string;
+  }) {
     try {
       const firm = new Firm();
       firm._id = `FIRM-${randomUUID()}`;
       firm.name = data.name;
+      firm.address = data.address;
       firm.admin = data.admin;
+
 
       const subscriptionExp = new Date();
       subscriptionExp.setHours(0, 0, 0, 0);
@@ -46,13 +52,13 @@ export class FirmService {
       }
 
       const firmInfo = {
-        customers:firm.customers.length,
-        farmers:firm.farmers.length,
-        stocks:firm.stocks.length,
-        distributers:firm.distributers.length
+        customers: firm.customers.length,
+        farmers: firm.farmers.length,
+        stocks: firm.stocks.length,
+        distributers: firm.distributers.length
       }
 
-      return { status: 200, firmInfo  };
+      return { status: 200, firmInfo };
     } catch (error: any) {
       return { status: 500, message: error.message };
     }
