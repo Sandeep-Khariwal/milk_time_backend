@@ -96,15 +96,15 @@ export const GetUserAllHistory = async (req: Request, res: Response) => {
 
 export const GetAllHistory = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const {month} = req.query
+  const { month } = req.query
 
   const historyService = new HistoryService();
 
   let response
 
-  if(Number(month) === 1){
+  if (Number(month) === 1) {
     response = await historyService.getOneMonthHistory(id);
-  } else{
+  } else {
     response = await historyService.getAllHistory(id);
   }
 
@@ -121,7 +121,7 @@ export const GetAllHistory = async (req: Request, res: Response) => {
   }
 };
 
-export const UpdateHistory = async(req: Request, res: Response) => {
+export const UpdateHistory = async (req: Request, res: Response) => {
 
   const { id } = req.params;
   const { userId, quantity, amount } = req.body;
@@ -129,13 +129,13 @@ export const UpdateHistory = async(req: Request, res: Response) => {
   const historyService = new HistoryService();
   const userService = new UserService();
 
-  
+
 
   const histResp = await historyService.updateHistory(id, quantity, amount);
 
   if (histResp["status"] === 200) {
 
-    const actualAmount: number = histResp["nextAmount"]??0;
+    const actualAmount: number = histResp["nextAmount"] ?? 0;
     await userService.addEarnings(userId, actualAmount);
 
     res.status(histResp["status"]).json({
@@ -163,19 +163,19 @@ export const DeleteHistory = async (req: Request, res: Response) => {
   let updateAmount = amount;
   if (userType === UserType.CUSTOMER) {
     isCustomer = true;
-   updateAmount = -amount
+    updateAmount = -amount
   }
 
   // calculate the earnings
-  const userResp:any = await userService.getUserById(userId)
+  const userResp: any = await userService.getUserById(userId)
   await userService.addHistoryInUser(userId, id, updateAmount, isCustomer);
   const response: any = await historyService.deleteHistoryById(id);
 
   if (response["status"] === 200) {
     const deletedHist = response["history"]
     const firmId = userResp["user"].firmId._id
-    await firmService.addStock(firmId, deletedHist.quantity,"",deletedHist.productName);
-    
+    await firmService.addStock(firmId, deletedHist.quantity, "", deletedHist.productName);
+
     res.status(response["status"]).json({
       status: response["status"],
       message: response["message"],
@@ -184,5 +184,28 @@ export const DeleteHistory = async (req: Request, res: Response) => {
     res
       .status(response["status"])
       .json({ status: response["status"], message: response["message"] });
+  }
+};
+
+
+export const GetMonthlyPurchaseSummary = async (
+  req: Request,
+  res: Response,
+) => {
+  const { id } = req.params;
+  const { fromDate, toDate } = req.query;
+
+  const historyService = new HistoryService();
+
+  const response = await historyService.GetMonthlyPurchaseSummary(
+    id,
+    new Date(fromDate as string),
+    new Date(toDate as string),
+  );
+
+  if (response.status === 200) {
+    res.status(200).json(response);
+  } else {
+    res.status(response.status).json(response);
   }
 };

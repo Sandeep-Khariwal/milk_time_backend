@@ -168,4 +168,36 @@ export class HistoryService {
       return { status: 500, message: error.message };
     }
   }
+
+
+public async GetMonthlyPurchaseSummary(
+  id: string,
+  fromDate: Date,
+  toDate: Date,
+) {
+  try {
+    const histories = await History.find({
+      user: id,
+      date: {
+        $gte: fromDate,
+        $lte: toDate,
+      },
+    });
+
+    const purchaseAmount = histories.reduce(
+      (total, item) => total + Math.abs(Number(item.amount || 0)),
+      0,
+    );
+
+    return {
+      status: 200,
+      purchaseAmount,
+    };
+  } catch (error: any) {
+    return {
+      status: 500,
+      message: error.message,
+    };
+  }
+}
 }
