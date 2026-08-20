@@ -14,6 +14,8 @@ import { PrivacyPloicy } from "./helper/privacyPolicy";
 import { DeleteHtmlForm } from "./helper/deleteAccount";
 import Razorpay from "razorpay";
 import dairySaleRouter from "./routes/dairySale.route";
+import milkRateRouter from "./routes/milkRate.route";
+import fs from "fs";
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 dotenv.config();
@@ -42,6 +44,12 @@ const startServer = async () => {
     const PORT = process.env.PORT || 9000;
     const VERSION = "v1";
 
+    const uploadDir = path.join(__dirname, "../uploads");
+
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
     // Middleware
     app.use(cors());
     app.use(
@@ -66,6 +74,7 @@ const startServer = async () => {
     app.use(`/api/${VERSION}/history`, historyRouter);
     app.use(`/api/${VERSION}/payment`, paymentRouter);
     app.use(`/api/${VERSION}/dairy-sale`, dairySaleRouter);
+    app.use(`/api/${VERSION}/milk-rate`, milkRateRouter);
 
     // html content
     app.get("/privacy-policy", (req, res) => {
@@ -77,7 +86,7 @@ const startServer = async () => {
     app.get("/delete-account", (req, res) => {
       res.setHeader("Content-Type", "text/html");
       const formHtml = DeleteHtmlForm()
-        res.send(formHtml);
+      res.send(formHtml);
     });
 
     app.listen(PORT, () => {

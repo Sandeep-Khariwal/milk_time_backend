@@ -9,6 +9,7 @@ interface UserModel {
   password: string;
   firmId: string;
   userCode: string;
+  hisabCycleDays?: number;
   isDeleted: boolean;
 
   // fields for customers
@@ -70,6 +71,9 @@ const userSchema = new Schema<UserModel>(
     userCode: {
       type: String,
       default: "",
+    },
+    hisabCycleDays: {
+      type: Number,
     },
     buffaloRate: {
       type: Number,

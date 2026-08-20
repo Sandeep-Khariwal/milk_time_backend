@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 import History from "../modals/history.modal";
+import { GetUserPaymentHistory } from "../controller/history.controller";
 
 export class HistoryService {
   public async createHistory(data: {
@@ -192,6 +193,40 @@ public async GetMonthlyPurchaseSummary(
     return {
       status: 200,
       purchaseAmount,
+    };
+  } catch (error: any) {
+    return {
+      status: 500,
+      message: error.message,
+    };
+  }
+}
+
+
+public async GetUserPaymentHistory(
+  id: string,
+  fromDate: Date,
+  toDate: Date,
+) {
+  try {
+   const payments = await History.find({
+  user: id,
+  amount: { $lt: 0 },
+  productName: "",
+  date: {
+    $gte: fromDate,
+    $lte: toDate,
+  },
+})
+      .populate({
+        path: "user",
+        select: ["_id", "name"],
+      })
+      .sort({ date: -1 });
+
+    return {
+      status: 200,
+      history: payments,
     };
   } catch (error: any) {
     return {
