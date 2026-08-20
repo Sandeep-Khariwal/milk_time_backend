@@ -209,3 +209,34 @@ export const GetMonthlyPurchaseSummary = async (
     res.status(response.status).json(response);
   }
 };
+
+
+export const GetUserPaymentHistory = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const { id } = req.params;
+    const { fromDate, toDate } = req.query;
+
+    if (!fromDate || !toDate) {
+      return res.status(400).json({
+        message: "fromDate and toDate are required",
+      });
+    }
+
+    const historyService = new HistoryService();
+
+    const result = await historyService.GetUserPaymentHistory(
+      id,
+      new Date(fromDate as string),
+      new Date(toDate as string),
+    );
+
+    return res.status(result.status).json(result);
+  } catch (error: any) {
+    return res.status(500).json({
+      message: error.message,
+    });
+  }
+};

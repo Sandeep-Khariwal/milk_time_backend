@@ -12,6 +12,7 @@ export class UserService {
     userType: string;
     firmId: string;
     userCode: string;
+    hisabCycleDays?: number;
     buffaloRate: number;
     cowRate: number;
     cowMilk?: {
@@ -48,6 +49,11 @@ export class UserService {
       if (data.userCode) {
         user.userCode = data.userCode;
       }
+
+      if (data.hisabCycleDays) {
+        user.hisabCycleDays = data.hisabCycleDays;
+      }
+
       if (data.buffaloRate) {
         user.buffaloRate = data.buffaloRate;
         user.buffaloMilk = data.buffaloMilk;
@@ -65,8 +71,8 @@ export class UserService {
 
       return { status: 200, user: savedUser, message: "User Created!!" };
     } catch (error: any) {
-      console.log("error : ",error);
-      
+      console.log("error : ", error);
+
       return { status: 500, message: error.message };
     }
   }
@@ -127,6 +133,7 @@ export class UserService {
       password: string;
       userType: string;
       firmId: string;
+      hisabCycleDays?: number;
       buffaloRate: number;
       cowRate: number;
       cowMilk?: {
@@ -246,10 +253,12 @@ export class UserService {
         "_id",
         "name",
         "phoneNumber",
-        "cowRate",
         "buffaloRate",
-        "userType",
         "userCode",
+        "cowRate",
+        "cowMilk",
+        "buffaloMilk",
+        "hisabCycleDays",
       ]);
 
       if (!users && users.length) {
@@ -295,6 +304,7 @@ export class UserService {
         "userType",
         "cowMilk",
         "buffaloMilk",
+        "hisabCycleDays",
       ]);
 
       if (!users && users.length) {
@@ -331,6 +341,7 @@ export class UserService {
         "cowRate",
         "cowMilk",
         "buffaloMilk",
+        "hisabCycleDays",
       ]);
 
       if (!users && users.length) {
@@ -574,7 +585,7 @@ export class UserService {
   public async getUsersBookings(id: string) {
     try {
 
-      const bookkeeping:any = await bookkeepingModel.find({
+      const bookkeeping: any = await bookkeepingModel.find({
         userId: id,
       });
 
@@ -585,7 +596,7 @@ export class UserService {
         };
       }
 
-      return { status: 200,  bookkeeping };
+      return { status: 200, bookkeeping };
     } catch (error: any) {
       return { status: 500, message: error.message };
     }
