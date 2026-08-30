@@ -84,7 +84,8 @@ export const GetTodayAllEntries = async (req: Request, res: Response) => {
     res.status(200).json({
       status: 200,
       data: response["entries"],
-      firmInfo:users
+      firmInfo:users,
+      totals: response["totals"]
     });
   } else {
     res

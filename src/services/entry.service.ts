@@ -215,7 +215,41 @@ export class EntryService {
         },
       ]);
 
-      return { status: 200, entries };
+      let customerTotal = 0;
+      let farmerTotal = 0;
+      let customerWeight = 0;
+      let farmerWeight = 0;
+      let farmerFatSum = 0;
+
+      entries.forEach((entry: any) => {
+        const weight = Number(entry.weight) || 0;
+        const amount = Number(entry.amount) || 0;
+        const fat = Number(entry.fat) || 0;
+
+        if (entry.customer && entry.customer.userType === "customer") {
+          customerTotal += amount;
+          customerWeight += weight;
+        } else if (entry.customer && entry.customer.userType === "farmer") {
+          farmerTotal += amount;
+          farmerWeight += weight;
+          if (fat > 0) {
+            farmerFatSum += (fat * weight);
+          }
+        }
+      });
+
+      const profitLoss = customerTotal - farmerTotal;
+
+      const totals = {
+        customerTotal,
+        farmerTotal,
+        customerWeight,
+        farmerWeight,
+        farmerFatSum,
+        profitLoss
+      };
+
+      return { status: 200, entries, totals };
     } catch (error: any) {
       return { status: 500, message: error.message };
     }

@@ -347,8 +347,25 @@ export const SetPaymentForUser = async (req: clientRequest, res: Response) => {
   const userService = new UserService();
   const historyService = new HistoryService();
 
-  const response = await userService.addEarnings(id, data.amount);
-  await historyService.createHistory(data);
+  const historyData = {
+    user: id,
+    firm: data.firmId || data.firm,
+    productName: "",
+    description: data.description || "Payment Received",
+    amount: data.amount,
+    quantity: 0,
+    date: data.date ? new Date(data.date) : new Date(),
+  };
+
+  const historyResponse: any = await historyService.createHistory(historyData);
+
+  let response: any = { status: 500, message: "Payment failed" };
+
+  if (historyResponse.status === 200) {
+    const isCustomer = data.userType === "customer";
+    response = await userService.addEarnings(id, data.amount);
+    await userService.addHistoryInUser(id, historyResponse.history._id, 0, isCustomer);
+  }
 
   if (response["status"] === 200) {
     res.status(response["status"]).json({
@@ -426,16 +443,35 @@ export const SaleProduct = async (req: Request, res: Response) => {
   const data = req.body;
   const userService = new UserService();
   const firmService = new FirmService();
+  const historyService = new HistoryService();
 
   // update user
   await userService.productPurchase(id, data);
 
   //update stock
   const response = await firmService.saleStock(
-    data.firmId,
+    data.firmId || data.firm,
     data.stockId,
     data.quantity,
   );
+
+  // ADD HISTORY RECORD FOR PRODUCT SALE
+  const historyData = {
+    user: id,
+    firm: data.firmId || data.firm,
+    productName: data.item || data.productName || "Product",
+    description: data.description || "",
+    amount: -Number(data.amount), // Negative for farmers (they bought product, so their earnings decrease)
+    quantity: Number(data.quantity),
+    date: data.date ? new Date(data.date) : new Date(),
+  };
+
+  const historyResponse: any = await historyService.createHistory(historyData);
+  if (historyResponse.status === 200) {
+    const isCustomer = data.userType === "customer";
+    // We pass 0 as amount because productPurchase already updated the earnings correctly
+    await userService.addHistoryInUser(id, historyResponse.history._id, 0, isCustomer);
+  }
 
   if (response["status"] === 200) {
     res.status(response["status"]).json({
@@ -447,5 +483,30 @@ export const SaleProduct = async (req: Request, res: Response) => {
     res
       .status(response["status"])
       .json({ status: response["status"], message: response["message"] });
+  }
+};
+
+export const GetSettlementSummary = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { fromDate, toDate } = req.query;
+
+  if (!fromDate || !toDate) {
+    return res.status(400).json({ status: 400, message: "fromDate and toDate are required" });
+  }
+
+  const userService = new UserService();
+  const response = await userService.getSettlementSummary(
+    id,
+    new Date(fromDate as string),
+    new Date(toDate as string)
+  );
+
+  if (response["status"] === 200) {
+    res.status(response["status"]).json(response);
+  } else {
+    res.status(response["status"] as number).json({
+      status: response["status"],
+      message: response["message"]
+    });
   }
 };

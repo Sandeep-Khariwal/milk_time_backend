@@ -17,6 +17,7 @@ import {
   SaleProduct,
   SetPaymentForUser,
   UpdateNameAndPassword,
+  GetSettlementSummary,
 } from "../controller/user.controller";
 import { authenticateToken } from "../middleware/jwtToken";
 const userRouter = express.Router();
@@ -44,5 +45,6 @@ userRouter.get(
 );
 userRouter.get("/getAllCustomers/:id", authenticateToken, getAllCustomers);
 userRouter.get("/getAllFarmers/:id", authenticateToken, getAllFarmers);
+userRouter.get("/settlementSummary/:id", GetSettlementSummary);
 
 export default userRouter;

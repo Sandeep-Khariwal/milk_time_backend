@@ -3,6 +3,8 @@ import User from "../modals/user.modal";
 import bcrypt from "bcryptjs";
 import { generateAccessToken } from "../middleware/jwtToken";
 import bookkeepingModel from "../modals/bookkeeping.model";
+import Entry from "../modals/entries.modal";
+import History from "../modals/history.modal";
 
 export class UserService {
   public async createUser(data: {
@@ -342,6 +344,7 @@ export class UserService {
         "cowMilk",
         "buffaloMilk",
         "hisabCycleDays",
+        "earnings",
       ]);
 
       if (!users && users.length) {
@@ -638,6 +641,99 @@ export class UserService {
         nessage: "bookingKeep created!!",
         bookingkeep: savedBookingKeep,
       };
+    } catch (error: any) {
+      return { status: 500, message: error.message };
+    }
+  }
+
+  public async getSettlementSummary(id: string, fromDate: Date, toDate: Date) {
+    try {
+      const user = await User.findById(id);
+      if (!user) {
+        return { status: 404, message: "User not found!!" };
+      }
+
+      // Fetch all entries on or after fromDate to calculate previous pending backwards
+      const futureEntries = await Entry.find({
+        customer: id,
+        date: { $gte: fromDate }
+      });
+
+      const futureHistory = await History.find({
+        user: id,
+        date: { $gte: fromDate }
+      });
+
+      let futureEntriesSum = 0;
+      futureEntries.forEach(e => {
+        futureEntriesSum += Number(e.amount || 0);
+      });
+
+      let futureHistorySum = 0;
+      futureHistory.forEach(h => {
+        futureHistorySum += Number(h.amount || 0);
+      });
+
+      const previousPending = (user.earnings || 0) - futureEntriesSum - futureHistorySum;
+
+      // Filter out records strictly within fromDate and toDate for current period
+      const currentEntries = futureEntries.filter(e => e.date <= toDate);
+      const currentHistory = futureHistory.filter(h => h.date <= toDate);
+
+      let currentPeriodAmount = 0;
+      let paid = 0;
+
+      const financialHistory: any[] = [];
+
+      currentEntries.forEach(e => {
+        const amt = Number(e.amount || 0);
+        currentPeriodAmount += amt;
+        financialHistory.push({
+          type: "milk",
+          date: e.date,
+          reason: e.isBuffalo ? "Buffalo Milk Collection" : "Cow Milk Collection",
+          amount: amt
+        });
+      });
+
+      currentHistory.forEach(h => {
+        const amt = Number(h.amount || 0);
+        // Payments typically have no productName. Purchases have productName.
+        const isPayment = !h.productName;
+        if (isPayment) {
+          paid += amt;
+        } else {
+          currentPeriodAmount += amt;
+        }
+
+        financialHistory.push({
+          type: isPayment ? "payment" : "purchase",
+          date: h.date,
+          reason: isPayment ? (h.description || "Payment Received") : `Purchased: ${h.productName}`,
+          amount: amt
+        });
+      });
+
+      financialHistory.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+      const totalPayable = previousPending + currentPeriodAmount;
+      const remaining = totalPayable + paid;
+
+      return {
+        status: 200,
+        financialHistory,
+        settlement: {
+          periodStart: fromDate,
+          periodEnd: toDate,
+          previousPending,
+          currentPeriodAmount,
+          totalPayable,
+          paid,
+          remaining
+        },
+        message: "Settlement summary fetched successfully"
+      };
+
     } catch (error: any) {
       return { status: 500, message: error.message };
     }
