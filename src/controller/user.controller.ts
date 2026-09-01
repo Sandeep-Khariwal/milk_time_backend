@@ -461,7 +461,7 @@ export const SaleProduct = async (req: Request, res: Response) => {
     firm: data.firmId || data.firm,
     productName: data.item || data.productName || "Product",
     description: data.description || "",
-    amount: -Number(data.amount), // Negative for farmers (they bought product, so their earnings decrease)
+    amount: data.userType === "customer" ? Number(data.amount) : -Number(data.amount),
     quantity: Number(data.quantity),
     date: data.date ? new Date(data.date) : new Date(),
   };

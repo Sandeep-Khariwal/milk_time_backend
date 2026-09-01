@@ -307,6 +307,7 @@ export class UserService {
         "cowMilk",
         "buffaloMilk",
         "hisabCycleDays",
+        "earnings"
       ]);
 
       if (!users && users.length) {
@@ -463,18 +464,21 @@ export class UserService {
     },
   ) {
     try {
+      const userDoc = await User.findById(id);
+      if (!userDoc) {
+        return { status: 404, message: "user not fond!!" };
+      }
+      
+      const earningAdjustment = userDoc.userType === "customer" ? data.amount : -data.amount;
+
       const user = await User.findByIdAndUpdate(
         id,
         {
           $push: { purchasedItem: data },
-          $inc: { earnings: -data.amount },
+          $inc: { earnings: earningAdjustment },
         },
         { new: true },
       );
-
-      if (!user) {
-        return { status: 404, message: "user not fond!!" };
-      }
 
       return { status: 200, user };
     } catch (error: any) {
@@ -688,12 +692,6 @@ export class UserService {
       currentEntries.forEach(e => {
         const amt = Number(e.amount || 0);
         currentPeriodAmount += amt;
-        financialHistory.push({
-          type: "milk",
-          date: e.date,
-          reason: e.isBuffalo ? "Buffalo Milk Collection" : "Cow Milk Collection",
-          amount: amt
-        });
       });
 
       currentHistory.forEach(h => {
