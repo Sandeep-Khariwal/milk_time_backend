@@ -698,11 +698,11 @@ export class UserService {
         const amt = Number(h.amount || 0);
         // Payments typically have no productName. Purchases have productName.
         const isPayment = !h.productName;
-        if (isPayment) {
-          paid += amt;
-        } else {
-          currentPeriodAmount += amt;
-        }
+        // if (isPayment) {
+        //   paid += amt;
+        // } else {
+        //   currentPeriodAmount += amt;
+        // }
 
         financialHistory.push({
           type: isPayment ? "payment" : "purchase",

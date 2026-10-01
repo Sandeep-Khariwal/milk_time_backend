@@ -14,7 +14,6 @@ export class FirmService {
       firm.address = data.address;
       firm.admin = data.admin;
 
-
       const subscriptionExp = new Date();
       subscriptionExp.setHours(0, 0, 0, 0);
 
@@ -55,8 +54,8 @@ export class FirmService {
         customers: firm.customers.length,
         farmers: firm.farmers.length,
         stocks: firm.stocks.length,
-        distributers: firm.distributers.length
-      }
+        distributers: firm.distributers.length,
+      };
 
       return { status: 200, firmInfo };
     } catch (error: any) {
@@ -310,31 +309,38 @@ export class FirmService {
   }
   public async saleStock(id: string, stockId: string, quantity: number) {
     try {
-      const firm = await Firm.findById(id);
+      if (quantity <= 0) {
+        return {
+          status: 400,
+          message: "Quantity must be greater than 0",
+        };
+      }
+
+      const firm = await Firm.findOneAndUpdate(
+        {
+          _id: id,
+          "stocks._id": stockId,
+          "stocks.quantity": { $gte: quantity },
+        },
+        {
+          $inc: {
+            "stocks.$.quantity": -quantity,
+          },
+        },
+        {
+          new: true,
+          runValidators: true,
+        },
+      );
 
       if (!firm) {
-        return { status: 404, message: "Firm not found!!" };
+        return {
+          status: 404,
+          message: "Firm or stock not found, or insufficient stock",
+        };
       }
 
-      // Find the stock item inside the firm's stocks
       const stock = firm.stocks.find((s: any) => s._id.toString() === stockId);
-
-      if (!stock) {
-        return { status: 404, message: "Stock item not found!!" };
-      }
-
-      // Check if enough quantity is available
-      // if (stock.quantity < quantity) {
-      //   return {
-      //     status: 400,
-      //     message: `Not enough stock! Available: ${stock.quantity}`,
-      //   };
-      // }
-
-      // Decrease quantity
-      stock.quantity = stock.quantity - quantity;
-      // Save updated firm
-      await firm.save();
 
       return {
         status: 200,
@@ -342,7 +348,12 @@ export class FirmService {
         message: "Stock updated successfully!!",
       };
     } catch (error: any) {
-      return { status: 500, message: error.message };
+      console.error("saleStock error:", error);
+
+      return {
+        status: 500,
+        message: error.message,
+      };
     }
   }
 
