@@ -698,18 +698,18 @@ export class UserService {
         const amt = Number(h.amount || 0);
         // Payments typically have no productName. Purchases have productName.
         const isPayment = !h.productName;
-        // if (isPayment) {
-        //   paid += amt;
-        // } else {
-        //   currentPeriodAmount += amt;
-        // }
+        if (isPayment) {
+          paid += amt;
+        } else {
+          currentPeriodAmount += amt;
+          financialHistory.push({
+            type: "purchase",
+            date: h.date,
+            reason: isPayment ? (h.description || "Payment Received") : `Purchased: ${h.productName}`,
+            amount: amt
+          });
+        }
 
-        financialHistory.push({
-          type: isPayment ? "payment" : "purchase",
-          date: h.date,
-          reason: isPayment ? (h.description || "Payment Received") : `Purchased: ${h.productName}`,
-          amount: amt
-        });
       });
 
       financialHistory.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
