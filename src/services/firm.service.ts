@@ -307,55 +307,87 @@ export class FirmService {
       };
     }
   }
-  public async saleStock(id: string, stockId: string, quantity: number) {
-    try {
-      if (quantity <= 0) {
-        return {
-          status: 400,
-          message: "Quantity must be greater than 0",
-        };
-      }
+ 
+public async saleStock(id: string, stockId: string, quantity: number) {
+  try {
+    console.log("Input:", { id, stockId, quantity });
 
-      const firm = await Firm.findOneAndUpdate(
-        {
-          _id: id,
-          "stocks._id": stockId,
-          "stocks.quantity": { $gte: quantity },
-        },
-        {
-          $inc: {
-            "stocks.$.quantity": -quantity,
-          },
-        },
-        {
-          new: true,
-          runValidators: true,
-        },
-      );
-
-      if (!firm) {
-        return {
-          status: 404,
-          message: "Firm or stock not found, or insufficient stock",
-        };
-      }
-
-      const stock = firm.stocks.find((s: any) => s._id.toString() === stockId);
-
+    if (!Number.isFinite(quantity) || quantity <= 0) {
       return {
-        status: 200,
-        stocks: firm.stocks,
-        message: "Stock updated successfully!!",
-      };
-    } catch (error: any) {
-      console.error("saleStock error:", error);
-
-      return {
-        status: 500,
-        message: error.message,
+        status: 400,
+        message: "Quantity must be greater than 0",
       };
     }
+
+    const firm = await Firm.findOneAndUpdate(
+      {
+        _id: id,
+        stocks: {
+          $elemMatch: {
+            _id: stockId,
+            quantity: { $gte: quantity },
+          },
+        },
+      },
+      {
+        $inc: {
+          "stocks.$.quantity": -quantity,
+        },
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!firm) {
+      // Check why the update filter didn't match.
+      const existingFirm = await Firm.findById(id);
+
+      if (!existingFirm) {
+        return {
+          status: 404,
+          message: "Firm not found",
+        };
+      }
+
+      const existingStock = existingFirm.stocks.find(
+        (s: any) => s._id.toString() === stockId
+      );
+
+      if (!existingStock) {
+        return {
+          status: 404,
+          message: "Stock not found",
+        };
+      }
+
+      return {
+        status: 400,
+        message: `Insufficient stock. Available: ${existingStock.quantity}`,
+      };
+    }
+
+    const stock = firm.stocks.find(
+      (s: any) => s._id.toString() === stockId
+    );
+
+    return {
+      status: 200,
+      stock,
+      stocks: firm.stocks,
+      message: "Stock updated successfully!",
+    };
+  } catch (error: any) {
+    console.error("saleStock error:", error);
+
+    return {
+      status: 500,
+      message: error.message,
+    };
   }
+}
+
 
   public async updateSubscription(id: string, months: number) {
     try {
@@ -395,13 +427,13 @@ export class FirmService {
   public async getAllFirms() {
     try {
       const firms: any = await Firm.find({})
-        .select(["_id", "name", "admin", "subscriptionExp"])
+        .select(["_id", "name", "admin", "subscriptionExp","address"])
         .populate([
           {
             path: "admin",
             select: ["_id", "phoneNumber"],
           },
-        ]);
+        ]).sort({createdAt:-1});
 
       if (!firms && firms.length) {
         return { status: 404, message: "firms not found!!" };
