@@ -155,7 +155,7 @@ export class EntryService {
       const endTime = new Date();
 
       startTime.setHours(0, 0, 0, 0);
-      endTime.setHours(11, 59, 59, 999);
+      endTime.setHours(13, 59, 59, 999);
 
       const users = await Entry.find({
         firm: firmId,
@@ -178,7 +178,7 @@ export class EntryService {
       const startTime = new Date();
       const endTime = new Date();
 
-      startTime.setHours(12, 0, 0, 0);
+      startTime.setHours(14, 0, 0, 0);
       endTime.setHours(23, 59, 59, 999);
 
       const users = await Entry.find({

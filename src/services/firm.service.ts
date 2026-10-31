@@ -310,8 +310,6 @@ export class FirmService {
  
 public async saleStock(id: string, stockId: string, quantity: number) {
   try {
-    console.log("Input:", { id, stockId, quantity });
-
     if (!Number.isFinite(quantity) || quantity <= 0) {
       return {
         status: 400,
@@ -325,7 +323,7 @@ public async saleStock(id: string, stockId: string, quantity: number) {
         stocks: {
           $elemMatch: {
             _id: stockId,
-            quantity: { $gte: quantity },
+            // quantity: { $gte: quantity },
           },
         },
       },

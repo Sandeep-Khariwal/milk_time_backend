@@ -228,7 +228,7 @@ export const getAllCustomers = async (req: clientRequest, res: Response) => {
   const entryService = new EntryService();
   const currentTime = new Date();
   const currentHour = currentTime.getHours();
-  const isMorning = currentHour < 12;
+  const isMorning = currentHour < 14;
 
   const response = await userService.getAllCustomersByFirmId(id);
   let resp1;
@@ -279,7 +279,8 @@ export const getAllFarmers = async (req: clientRequest, res: Response) => {
 
   const currentTime = new Date();
   const currentHour = currentTime.getHours();
-  const isMorning = currentHour < 12;
+  
+  const isMorning = currentHour < 14;
 
   const response = await userService.getAllFarmersByFirmId(id);
   let resp1;
@@ -294,7 +295,7 @@ export const getAllFarmers = async (req: clientRequest, res: Response) => {
     const userIds = resp1["users"]?.map((usr: any) => usr.customer);
 
     const currentHour = new Date().getHours();
-    const isMorning = currentHour < 12;
+    const isMorning = currentHour < 14;
 
     const formatedUser = response["users"]?.map((u: any) => {
       const usrs = u.toObject();
