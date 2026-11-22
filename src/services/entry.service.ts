@@ -5,6 +5,10 @@ import {
   formatDate,
   getCurrentTimeZoneIST,
   getTodayDDMMYYYY,
+  getISTShiftInfo,
+  getISTMorningBoundaries,
+  getISTEveningBoundaries,
+  getISTDayBoundaries,
 } from "../helper/helperFunctions";
 
 export class EntryService {
@@ -148,22 +152,24 @@ export class EntryService {
     }
   }
 
-  // ✅ MORNING ENTRY (original)
-  public async getAllUserIdIfTodayMorningEntry(firmId: string) {
+  // ✅ MORNING ENTRY (IST-aware)
+  public async getAllUserIdIfTodayMorningEntry(firmId: string, referenceDate: Date = new Date()) {
     try {
-      const startTime = new Date();
-      const endTime = new Date();
-
-      startTime.setHours(0, 0, 0, 0);
-      endTime.setHours(11, 59, 59, 999);
+      const { shiftStartUtc, shiftEndUtc } = getISTMorningBoundaries(referenceDate);
 
       const users = await Entry.find({
         firm: firmId,
         date: {
-          $gte: startTime,
-          $lte: endTime,
+          $gte: shiftStartUtc,
+          $lt: shiftEndUtc,
         },
-        timeZone: "M",
+        $or: [
+          { timeZone: "M" },
+          { timeZone: "Morning" },
+          { timeZone: { $exists: false } },
+          { timeZone: null },
+          { timeZone: "" },
+        ],
       }).select("customer");
 
       return { status: 200, users };
@@ -172,22 +178,24 @@ export class EntryService {
     }
   }
 
-  // ✅ EVENING ENTRY (original)
-  public async getAllUserIdIfTodayEveningEntry(firmId: string) {
+  // ✅ EVENING ENTRY (IST-aware)
+  public async getAllUserIdIfTodayEveningEntry(firmId: string, referenceDate: Date = new Date()) {
     try {
-      const startTime = new Date();
-      const endTime = new Date();
-
-      startTime.setHours(12, 0, 0, 0);
-      endTime.setHours(23, 59, 59, 999);
+      const { shiftStartUtc, shiftEndUtc } = getISTEveningBoundaries(referenceDate);
 
       const users = await Entry.find({
         firm: firmId,
         date: {
-          $gte: startTime,
-          $lte: endTime,
+          $gte: shiftStartUtc,
+          $lt: shiftEndUtc,
         },
-        timeZone: "E",
+        $or: [
+          { timeZone: "E" },
+          { timeZone: "Evening" },
+          { timeZone: { $exists: false } },
+          { timeZone: null },
+          { timeZone: "" },
+        ],
       }).select("customer");
 
       return { status: 200, users };
@@ -196,18 +204,45 @@ export class EntryService {
     }
   }
 
-  // ✅ TODAY ENTRIES (original)
-  public async getTodayEntriesByCustomer(firmId: string) {
+  // ✅ CURRENT SHIFT ENTRIES (IST-aware distinct query)
+  public async getUserIdsWithEntryInCurrentShift(firmId: string, referenceDate: Date = new Date()) {
     try {
-      const start = new Date();
-      start.setHours(0, 0, 0, 0);
+      const { shift, shiftStartUtc, shiftEndUtc, istDateString } = getISTShiftInfo(referenceDate);
 
-      const end = new Date();
-      end.setHours(23, 59, 59, 999);
+      const userIds = await Entry.distinct("customer", {
+        firm: firmId,
+        date: {
+          $gte: shiftStartUtc,
+          $lt: shiftEndUtc,
+        },
+        $or: [
+          { timeZone: shift },
+          { timeZone: shift === "M" ? "Morning" : "Evening" },
+          { timeZone: { $exists: false } },
+          { timeZone: null },
+          { timeZone: "" },
+        ],
+      });
+
+      return {
+        status: 200,
+        userIds: userIds.map((id: any) => String(id)),
+        shift,
+        istDateString,
+      };
+    } catch (error: any) {
+      return { status: 500, message: error.message };
+    }
+  }
+
+  // ✅ TODAY ENTRIES (IST-aware full day)
+  public async getTodayEntriesByCustomer(firmId: string, referenceDate: Date = new Date()) {
+    try {
+      const { dayStartUtc, dayEndUtc } = getISTDayBoundaries(referenceDate);
 
       const entries = await Entry.find({
         firm: firmId,
-        date: { $gte: start, $lte: end },
+        date: { $gte: dayStartUtc, $lte: dayEndUtc },
       }).populate([
         {
           path: "customer",

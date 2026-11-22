@@ -226,50 +226,34 @@ export const getAllCustomers = async (req: clientRequest, res: Response) => {
   const { id } = req.params;
   const userService = new UserService();
   const entryService = new EntryService();
-  const currentTime = new Date();
-  const currentHour = currentTime.getHours();
-  const isMorning = currentHour < 14;
 
   const response = await userService.getAllCustomersByFirmId(id);
-  let resp1;
+  const shiftResp = await entryService.getUserIdsWithEntryInCurrentShift(id);
 
-  if (isMorning) {
-    resp1 = await entryService.getAllUserIdIfTodayMorningEntry(id);
-  } else {
-    resp1 = await entryService.getAllUserIdIfTodayEveningEntry(id);
-  }
-
-  if (response["status"] === 200 && resp1["status"] === 200) {
-    const userIds = resp1["users"]?.map((usr: any) => usr.customer);
+  if (response["status"] === 200 && shiftResp["status"] === 200) {
+    const userIdsWithEntry = new Set((shiftResp["userIds"] || []).map((uid: any) => String(uid)));
     const formatedUser = response["users"]?.map((usrs: any) => {
-      // const usrs = u.toObject();
-      const morningMilk =
-        usrs?.cowMilk?.morningTimeMilk || usrs?.buffaloMilk?.morningTimeMilk;
-      const eveningMilk =
-        usrs?.cowMilk?.eveningTimeMilk || usrs?.buffaloMilk?.eveningTimeMilk;
+      const uObj = usrs.toObject ? usrs.toObject() : usrs;
+      const milkUpdated = userIdsWithEntry.has(String(uObj._id));
 
-      if (userIds?.includes(usrs._id)) {
-        return {
-          ...usrs,
-          milkUpdated: true,
-        };
-      } else {
-        return {
-          ...usrs,
-          milkUpdated: isMorning ? !morningMilk : !eveningMilk,
-        };
-      }
+      return {
+        ...uObj,
+        milkUpdated,
+      };
     });
 
-    res.status(response["status"]).json({
-      status: response["status"],
+    res.status(200).json({
+      status: 200,
       users: formatedUser,
+      currentShift: shiftResp["shift"],
+      shiftName: shiftResp["shift"] === "M" ? "Morning" : "Evening",
+      istDate: shiftResp["istDateString"],
       message: response["message"],
     });
   } else {
-    res
-      .status(response["status"])
-      .json({ status: response["status"], message: response["message"] });
+    const errStatus = response["status"] !== 200 ? response["status"] : shiftResp["status"];
+    const errMsg = response["status"] !== 200 ? response["message"] : shiftResp["message"];
+    res.status(errStatus).json({ status: errStatus, message: errMsg });
   }
 };
 export const getAllFarmers = async (req: clientRequest, res: Response) => {
@@ -277,53 +261,15 @@ export const getAllFarmers = async (req: clientRequest, res: Response) => {
   const userService = new UserService();
   const entryService = new EntryService();
 
-  const currentTime = new Date();
-  const currentHour = currentTime.getHours();
-  
-  const isMorning = currentHour < 13;
-
   const response = await userService.getAllFarmersByFirmId(id);
-  let resp1;
+  const shiftResp = await entryService.getUserIdsWithEntryInCurrentShift(id);
 
-  if (isMorning) {
-    resp1 = await entryService.getAllUserIdIfTodayMorningEntry(id);
-  } else {
-    resp1 = await entryService.getAllUserIdIfTodayEveningEntry(id);
-  }
-
-  if (response["status"] === 200 && resp1["status"] === 200) {
-    const userIds = resp1["users"]?.map((usr: any) => usr.customer);
-
-    const currentHour = new Date().getHours();
-    
-    const isMorning = currentHour < 12;
+  if (response["status"] === 200 && shiftResp["status"] === 200) {
+    const userIdsWithEntry = new Set((shiftResp["userIds"] || []).map((uid: any) => String(uid)));
 
     const formatedUser = response["users"]?.map((u: any) => {
-      const usrs = u.toObject();
-
-      const morningMilk =
-        usrs?.cowMilk?.morningTimeMilk || usrs?.buffaloMilk?.morningTimeMilk;
-
-      const eveningMilk =
-        usrs?.cowMilk?.eveningTimeMilk || usrs?.buffaloMilk?.eveningTimeMilk;
-
-      let milkUpdated:boolean = false;
-
-      if (isMorning) {
-        // 👉 Morning logic
-        if (!morningMilk) {
-          milkUpdated = true; // milk deta hi nahi → auto true
-        } else {
-          milkUpdated = userIds?.includes(usrs._id)!;
-        }
-      } else {
-        // 👉 Evening logic
-        if (!eveningMilk) {
-          milkUpdated = true; // milk deta hi nahi → auto true
-        } else {
-          milkUpdated = userIds?.includes(usrs._id)!;
-        }
-      }
+      const usrs = u.toObject ? u.toObject() : u;
+      const milkUpdated = userIdsWithEntry.has(String(usrs._id));
 
       return {
         ...usrs,
@@ -331,15 +277,18 @@ export const getAllFarmers = async (req: clientRequest, res: Response) => {
       };
     });
 
-    res.status(response["status"]).json({
-      status: response["status"],
+    res.status(200).json({
+      status: 200,
       users: formatedUser,
+      currentShift: shiftResp["shift"],
+      shiftName: shiftResp["shift"] === "M" ? "Morning" : "Evening",
+      istDate: shiftResp["istDateString"],
       message: response["message"],
     });
   } else {
-    res
-      .status(response["status"])
-      .json({ status: response["status"], message: response["message"] });
+    const errStatus = response["status"] !== 200 ? response["status"] : shiftResp["status"];
+    const errMsg = response["status"] !== 200 ? response["message"] : shiftResp["message"];
+    res.status(errStatus).json({ status: errStatus, message: errMsg });
   }
 };
 
