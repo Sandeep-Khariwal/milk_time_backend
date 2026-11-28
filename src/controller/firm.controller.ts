@@ -47,13 +47,22 @@ export const CreateNewStock = async (req: Request, res: Response) => {
   const { id } = req.params;
   const stock = req.body;
   const firmService = new FirmService();
-  
 
   let response;
-  if (stock._id) {
-    response = await firmService.editStock(id, stock);
+  if (stock._id && typeof stock._id === "string" && stock._id.trim() !== "") {
+    response = await firmService.editStock(id, {
+      ...stock,
+      _id: stock._id.trim(),
+      item: String(stock.item || "").trim(),
+      quantity: Number(stock.quantity),
+      price: Number(stock.price),
+    });
   } else {
-    response = await firmService.addNewStock(id, {item:stock.item,quantity:Number(stock.quantity),price:Number(stock.price)});
+    response = await firmService.addNewStock(id, {
+      item: String(stock.item || "").trim(),
+      quantity: Number(stock.quantity),
+      price: Number(stock.price),
+    });
   }
 
   if (response["status"] === 200) {

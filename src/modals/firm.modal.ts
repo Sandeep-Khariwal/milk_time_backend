@@ -9,7 +9,7 @@ interface FirmModel {
   distributers: string[];
   customers: string[];
   farmers: string[];
-  stocks: { item: string; quantity: number; price: number }[];
+  stocks: { _id?: any; item: string; quantity: number; price: number }[];
   subscriptionExp: Date;
 }
 const firmSchema = new Schema<FirmModel>(

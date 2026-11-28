@@ -204,6 +204,32 @@ export class EntryService {
     }
   }
 
+  // ✅ TODAY ENTRIES STATUS (IST-aware full day distinct query - any entry today marks user GREEN)
+  public async getUserIdsWithEntryToday(firmId: string, referenceDate: Date = new Date()) {
+    try {
+      const { dayStartUtc, dayEndUtc } = getISTDayBoundaries(referenceDate);
+
+      const userIds = await Entry.distinct("customer", {
+        firm: firmId,
+        date: {
+          $gte: dayStartUtc,
+          $lte: dayEndUtc,
+        },
+      });
+
+      const { shift, istDateString } = getISTShiftInfo(referenceDate);
+
+      return {
+        status: 200,
+        userIds: userIds.map((id: any) => String(id)),
+        shift,
+        istDateString,
+      };
+    } catch (error: any) {
+      return { status: 500, message: error.message };
+    }
+  }
+
   // ✅ CURRENT SHIFT ENTRIES (IST-aware distinct query)
   public async getUserIdsWithEntryInCurrentShift(firmId: string, referenceDate: Date = new Date()) {
     try {

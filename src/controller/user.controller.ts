@@ -228,7 +228,7 @@ export const getAllCustomers = async (req: clientRequest, res: Response) => {
   const entryService = new EntryService();
 
   const response = await userService.getAllCustomersByFirmId(id);
-  const shiftResp = await entryService.getUserIdsWithEntryInCurrentShift(id);
+  const shiftResp = await entryService.getUserIdsWithEntryToday(id);
 
   if (response["status"] === 200 && shiftResp["status"] === 200) {
     const userIdsWithEntry = new Set((shiftResp["userIds"] || []).map((uid: any) => String(uid)));
@@ -262,7 +262,7 @@ export const getAllFarmers = async (req: clientRequest, res: Response) => {
   const entryService = new EntryService();
 
   const response = await userService.getAllFarmersByFirmId(id);
-  const shiftResp = await entryService.getUserIdsWithEntryInCurrentShift(id);
+  const shiftResp = await entryService.getUserIdsWithEntryToday(id);
 
   if (response["status"] === 200 && shiftResp["status"] === 200) {
     const userIdsWithEntry = new Set((shiftResp["userIds"] || []).map((uid: any) => String(uid)));

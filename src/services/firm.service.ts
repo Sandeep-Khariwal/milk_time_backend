@@ -147,21 +147,76 @@ export class FirmService {
     },
   ) {
     try {
-      const firm = await Firm.findByIdAndUpdate(
-        id,
-        {
-          $push: { stocks: data },
-        },
-        { new: true },
-      );
+      const trimmedItem = String(data.item || "").trim();
+      if (!trimmedItem) {
+        return { status: 400, message: "Item name is required" };
+      }
+      const quantity = Number(data.quantity) || 0;
+      const price = Number(data.price) || 0;
 
+      // Check if firm exists
+      const firm = await Firm.findById(id);
       if (!firm) {
         return { status: 404, message: "Firm not found!!" };
       }
 
+      const escapedItem = trimmedItem.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const itemRegex = new RegExp(`^${escapedItem}$`, "i");
+
+      const existingStock = firm.stocks?.find(
+        (s: any) => s.item && s.item.trim().toLowerCase() === trimmedItem.toLowerCase(),
+      );
+
+      let updatedFirm;
+      if (existingStock) {
+        // If stock item already exists, follow existing business logic: increment quantity and update price
+        updatedFirm = await Firm.findOneAndUpdate(
+          { _id: id, "stocks._id": (existingStock as any)._id },
+          {
+            $inc: { "stocks.$.quantity": quantity },
+            $set: { "stocks.$.price": price },
+          },
+          { new: true },
+        );
+      } else {
+        // Atomically push the new stock item ONLY IF no matching item was concurrently added
+        updatedFirm = await Firm.findOneAndUpdate(
+          {
+            _id: id,
+            stocks: { $not: { $elemMatch: { item: itemRegex } } },
+          },
+          {
+            $push: {
+              stocks: {
+                item: trimmedItem,
+                quantity: quantity,
+                price: price,
+              },
+            },
+          },
+          { new: true },
+        );
+
+        // If a concurrent request created the stock item during the race window, atomically increment it
+        if (!updatedFirm) {
+          updatedFirm = await Firm.findOneAndUpdate(
+            { _id: id, "stocks.item": itemRegex },
+            {
+              $inc: { "stocks.$.quantity": quantity },
+              $set: { "stocks.$.price": price },
+            },
+            { new: true },
+          );
+        }
+      }
+
+      if (!updatedFirm) {
+        return { status: 500, message: "Failed to update firm stocks" };
+      }
+
       return {
         status: 200,
-        stocks: firm.stocks,
+        stocks: updatedFirm.stocks,
         message: "Stocks created successfully!!",
       };
     } catch (error: any) {
@@ -178,13 +233,17 @@ export class FirmService {
     },
   ) {
     try {
+      const trimmedItem = String(data.item || "").trim();
+      const quantity = Number(data.quantity);
+      const price = Number(data.price);
+
       const firm = await Firm.findOneAndUpdate(
         { _id: id, "stocks._id": data._id },
         {
           $set: {
-            "stocks.$.item": data.item,
-            "stocks.$.quantity": data.quantity,
-            "stocks.$.price": data.price,
+            "stocks.$.item": trimmedItem,
+            "stocks.$.quantity": quantity,
+            "stocks.$.price": price,
           },
         },
         { new: true },
